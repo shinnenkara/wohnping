@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Wohnping Einstellungen</title>
+  <link rel="stylesheet" href="../ui/base.css">
+  <style>
+    main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 16px; }
+    h1 { font-size: 22px; margin: 0; }
+    h2 { font-size: 16px; margin: 0; }
+    pre {
+      white-space: pre-wrap;
+      background: #f6f7f4;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Wohnping</h1>
+      <p class="muted">Eine gespeicherte Suche, ein eigener Tab. Senden bleibt bei dir.</p>
+    </header>
+
+    <section class="card stack">
+      <h2>Überwachung</h2>
+      <div class="row" id="watch-controls"></div>
+      <p id="watch-warning" class="warn"></p>
+      <div class="row watch-tab-row" id="watch-tab"></div>
+      <div class="status-row">
+        <span id="watch-status" class="status-pill"></span>
+        <span id="watch-detail" class="muted"></span>
+      </div>
+    </section>
+
+    <form id="settings" class="card stack" novalidate>
+      <h2>Suche und Profil</h2>
+      <div>
+        <label for="searchUrl">Such-URL</label>
+        <input id="searchUrl" name="searchUrl" type="url" placeholder="https://www.immobilienscout24.de/Suche/...">
+      </div>
+      <div class="row">
+        <button type="button" class="secondary" id="use-tab">URL dieses Tabs übernehmen</button>
+      </div>
+      <p id="url-note" class="warn"></p>
+
+      <div class="grid-2">
+        <div>
+          <label for="salutation">Anrede</label>
+          <select id="salutation" name="salutation">
+            <option>Herr</option>
+            <option>Frau</option>
+          </select>
+        </div>
+        <div>
+          <label for="phone">Telefon</label>
+          <input id="phone" name="phone" autocomplete="tel">
+        </div>
+        <div>
+          <label for="firstName">Vorname</label>
+          <input id="firstName" name="firstName" autocomplete="given-name">
+        </div>
+        <div>
+          <label for="lastName">Nachname</label>
+          <input id="lastName" name="lastName" autocomplete="family-name">
+        </div>
+        <div>
+          <label for="email">E-Mail</label>
+          <input id="email" name="email" type="email" autocomplete="email">
+        </div>
+        <div>
+          <label for="street">Straße</label>
+          <input id="street" name="street" autocomplete="address-line1">
+        </div>
+        <div>
+          <label for="houseNumber">Hausnummer</label>
+          <input id="houseNumber" name="houseNumber">
+        </div>
+        <div>
+          <label for="postcode">PLZ</label>
+          <input id="postcode" name="postcode" autocomplete="postal-code">
+        </div>
+        <div>
+          <label for="city">Ort</label>
+          <input id="city" name="city" autocomplete="address-level2">
+        </div>
+        <div>
+          <label for="moveInDateType">Einzugstermin</label>
+          <select id="moveInDateType" name="moveInDateType">
+            <option value="FROM_NOW">ab sofort</option>
+            <option value="FLEXIBLE">flexibel</option>
+            <option value="CONCRETE">genaues Datum</option>
+          </select>
+        </div>
+        <div id="move-in-date" hidden>
+          <label for="moveInDate">Datum</label>
+          <input id="moveInDate" name="moveInDate" placeholder="TT.MM.JJJJ">
+        </div>
+        <div>
+          <label for="numberOfAdults">Erwachsene</label>
+          <input id="numberOfAdults" name="numberOfAdults" inputmode="numeric">
+        </div>
+        <div>
+          <label for="numberOfKids">Kinder</label>
+          <input id="numberOfKids" name="numberOfKids" inputmode="numeric">
+        </div>
+        <div>
+          <label for="hasPets">Haustiere (außer Kleintiere, z. B. Hamster)</label>
+          <select id="hasPets" name="hasPets">
+            <option value="FALSE">Nein</option>
+            <option value="TRUE">Ja</option>
+          </select>
+        </div>
+        <div id="pet-details" hidden>
+          <label for="petDetails">Anzahl und Tierart</label>
+          <input id="petDetails" name="petDetails" placeholder="1 Katze">
+        </div>
+        <div>
+          <label for="employmentStatus">Beschäftigungsart</label>
+          <select id="employmentStatus" name="employmentStatus">
+            <option value="INDEFINITE_PERIOD">Unbefristet</option>
+            <option value="FIXED_TERM">Befristet</option>
+          </select>
+        </div>
+        <div>
+          <label for="incomeAmount">Monatliches netto Haushaltseinkommen</label>
+          <input id="incomeAmount" name="incomeAmount" inputmode="decimal" placeholder="3600">
+        </div>
+        <div>
+          <label for="forCommercialPurposes">Nutzung für gewerbliche Zwecke</label>
+          <select id="forCommercialPurposes" name="forCommercialPurposes">
+            <option value="FALSE">Nein</option>
+            <option value="TRUE">Ja</option>
+          </select>
+        </div>
+        <div>
+          <label for="rentArrears">Mietrückstände in den letzten 5 Jahren</label>
+          <select id="rentArrears" name="rentArrears">
+            <option value="FALSE">Nein</option>
+            <option value="TRUE">Ja</option>
+          </select>
+        </div>
+        <div>
+          <label for="insolvencyProcess">Insolvenzverfahren in den letzten 5 Jahren</label>
+          <select id="insolvencyProcess" name="insolvencyProcess">
+            <option value="FALSE">Nein</option>
+            <option value="TRUE">Ja</option>
+          </select>
+        </div>
+        <div>
+          <label for="smoker">Raucher:in</label>
+          <select id="smoker" name="smoker">
+            <option value="FALSE">Nein</option>
+            <option value="TRUE">Ja</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="message">Nachricht</label>
+        <textarea id="message" name="message" placeholder="Dein Text, ohne Anrede."></textarea>
+      </div>
+      <p id="length" class="muted"></p>
+      <div class="stack">
+        <div>
+          <div class="muted">Vorschau Frau</div>
+          <pre id="preview-frau"></pre>
+        </div>
+        <div>
+          <div class="muted">Vorschau Herr</div>
+          <pre id="preview-herr"></pre>
+        </div>
+      </div>
+      <div class="row">
+        <button type="submit">Speichern</button>
+        <span id="save-note" class="ok"></span>
+      </div>
+    </form>
+    <p class="muted">Wohnping ist unabhängig und nicht mit Scout24 oder ImmobilienScout24 verbunden.</p>
+  </main>
+  <script src="../lib/url.js"></script>
+  <script src="../lib/greeting.js"></script>
+  <script src="../ui/actions.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

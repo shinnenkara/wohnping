@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Wohnping</title>
+  <link rel="stylesheet" href="../ui/base.css">
+  <style>
+    body {
+      width: 380px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    h1 { font-size: 16px; margin: 0; }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      max-height: 360px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    li { min-width: 0; padding-bottom: 8px; border-bottom: 1px solid #e7e5e4; }
+    li.listing { position: relative; padding-right: 32px; }
+    .title {
+      min-width: 0;
+      max-width: 100%;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .listing-id { font-size: 12px; color: #57534e; }
+    .meta { font-size: 12px; color: #57534e; margin: 2px 0 6px; }
+    .listing-stamp { font-size: 12px; color: #57534e; margin-top: 6px; }
+    li.listing .listing-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 28px;
+      height: 28px;
+    }
+    li.listing.collapsed .listing-body { display: none; }
+  </style>
+</head>
+<body>
+  <header class="popup-header">
+    <h1>Wohnping</h1>
+    <button type="button" class="icon quiet" id="options" aria-label="Einstellungen" title="Einstellungen">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.2 7.2 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.5.42h3.84c.25 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+      </svg>
+    </button>
+  </header>
+  <div class="row" id="controls"></div>
+  <div class="row" id="page-actions"></div>
+  <p id="warning" class="warn"></p>
+  <ul id="list"></ul>
+  <div class="row watch-tab-row" id="tab-actions"></div>
+  <footer class="status-row">
+    <span id="status" class="status-pill"></span>
+    <span id="detail" class="muted"></span>
+  </footer>
+  <script src="../ui/actions.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Wohnping",
+  "version": "1.0.0",
+  "description": "Überwacht eine gespeicherte ImmobilienScout24-Suche und füllt das Kontaktformular. Senden bleibt bei dir.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage", "alarms", "notifications", "tabs"],
+  "host_permissions": ["https://*.immobilienscout24.de/*", "https://immobilienscout24.de/*"],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "action": {
+    "default_title": "Wohnping",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.immobilienscout24.de/*", "https://immobilienscout24.de/*"],
+      "js": ["lib/url.js", "parse/search-results.js", "ui/actions.js", "ui/page-bar.js", "content/watch.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.immobilienscout24.de/expose/*", "https://immobilienscout24.de/expose/*"],
+      "js": ["lib/greeting.js", "fill/contact-form.js", "ui/page-bar.js", "content/expose.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
