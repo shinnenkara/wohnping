@@ -186,6 +186,26 @@
     if (option) setNativeValue(el, option.value);
   }
 
+  function forceNamedSelect(doc, name, value) {
+    if (!value) return false;
+    const el = findNamed(doc, name);
+    if (!el || el.tagName !== "SELECT") return false;
+    if (el.value === value) return true;
+    const option = [...el.options].find((item) => item.value === value);
+    if (!option) return false;
+    setNativeValue(el, option.value);
+    return el.value === value;
+  }
+
+  function forceMoveInDate(doc, value) {
+    if (!value) return false;
+    const date = findMoveInDate(doc);
+    if (!date) return false;
+    if (date.value === value) return true;
+    setNativeValue(date, value);
+    return date.value === value;
+  }
+
   function fillNamedInput(doc, name, value) {
     if (value == null || value === "") return;
     const el = findNamed(doc, name);
@@ -214,14 +234,39 @@
     return null;
   }
 
+  function moveInMissing(doc, profile) {
+    const missing = [];
+    if (profile.moveInDateType) {
+      const typeEl = findNamed(doc, "moveInDateType");
+      if (typeEl && typeEl.value !== profile.moveInDateType) missing.push("moveInDateType");
+    }
+    if (profile.moveInDateType === "CONCRETE") {
+      const date = findMoveInDate(doc);
+      if (!date || !profile.moveInDate || date.value !== profile.moveInDate) missing.push("Datum");
+    }
+    return missing;
+  }
+
+  async function holdMoveIn(doc, profile) {
+    if (!profile.moveInDateType || !findNamed(doc, "moveInDateType")) return [];
+    const wantsDate = profile.moveInDateType === "CONCRETE";
+    const started = Date.now();
+    let stable = 0;
+    while (Date.now() - started < 2000) {
+      const typeOk = forceNamedSelect(doc, "moveInDateType", profile.moveInDateType);
+      const dateOk = !wantsDate || forceMoveInDate(doc, profile.moveInDate);
+      if (typeOk && dateOk) stable += 1;
+      else stable = 0;
+      if (stable >= 3 && Date.now() - started >= 1000) break;
+      await sleep(200);
+    }
+    return moveInMissing(doc, profile);
+  }
+
   async function fillExtra(doc, profile) {
     const missing = [];
-    fillNamedSelect(doc, "moveInDateType", profile.moveInDateType);
-    if (profile.moveInDateType === "CONCRETE") {
-      const date = await waitFor(() => findMoveInDate(doc), 2500);
-      if (date && isEmpty(date) && profile.moveInDate) setNativeValue(date, profile.moveInDate);
-      if (!date || isEmpty(date)) missing.push("Datum");
-    }
+    forceNamedSelect(doc, "moveInDateType", profile.moveInDateType);
+    if (profile.moveInDateType === "CONCRETE") forceMoveInDate(doc, profile.moveInDate);
     fillNamedSelect(doc, "hasPets", profile.hasPets);
     if (profile.hasPets === "TRUE") {
       const pets = await waitFor(() => findPetDetails(doc), 2500);
@@ -235,11 +280,12 @@
     for (const name of ["forCommercialPurposes", "rentArrears", "insolvencyProcess", "smoker"]) {
       fillNamedSelect(doc, name, profile[name]);
     }
-    const watched = ["moveInDateType", "numberOfAdults", "numberOfKids", "hasPets", "employmentStatus", "incomeAmount", "forCommercialPurposes", "rentArrears", "insolvencyProcess", "smoker"];
+    const watched = ["numberOfAdults", "numberOfKids", "hasPets", "employmentStatus", "incomeAmount", "forCommercialPurposes", "rentArrears", "insolvencyProcess", "smoker"];
     for (const name of watched) {
       const el = findNamed(doc, name);
       if (el && isEmpty(el) && profile[name]) missing.push(name);
     }
+    missing.push(...await holdMoveIn(doc, profile));
     return missing;
   }
 
