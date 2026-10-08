@@ -1,0 +1,9 @@
+{
+  "added": 1,
+  "notificationIds": ["expose-12"],
+  "rows": [
+    { "id": "10", "status": "new", "title": "Altbau" },
+    { "id": "11", "status": "new", "title": "Studio" },
+    { "id": "12", "status": "new", "title": "Neubauwohnung" }
+  ]
+}

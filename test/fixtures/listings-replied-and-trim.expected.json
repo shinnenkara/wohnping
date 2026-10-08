@@ -1,0 +1,16 @@
+{
+  "statuses": {
+    "a": "replied",
+    "b": "replied",
+    "c": "dismissed",
+    "d": "replied"
+  },
+  "trim": {
+    "size": 400,
+    "dropped": ["drop-1", "drop-2"],
+    "kept": [
+      { "id": "extra", "status": "new" },
+      { "id": "keep-new", "status": "new" }
+    ]
+  }
+}

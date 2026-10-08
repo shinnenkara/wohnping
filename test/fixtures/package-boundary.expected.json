@@ -1,0 +1,29 @@
+{
+  "permissions": ["alarms", "notifications", "storage", "tabs"],
+  "host_permissions": [
+    "https://*.immobilienscout24.de/*",
+    "https://immobilienscout24.de/*"
+  ],
+  "files": [
+    "background/service-worker.js",
+    "content/expose.js",
+    "content/watch.js",
+    "fill/contact-form.js",
+    "icons/icon128.png",
+    "icons/icon16.png",
+    "icons/icon48.png",
+    "lib/greeting.js",
+    "lib/listings.js",
+    "lib/storage.js",
+    "lib/url.js",
+    "manifest.json",
+    "options/options.html",
+    "options/options.js",
+    "parse/search-results.js",
+    "popup/popup.html",
+    "popup/popup.js",
+    "ui/actions.js",
+    "ui/base.css",
+    "ui/page-bar.js"
+  ]
+}

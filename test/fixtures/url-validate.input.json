@@ -1,0 +1,11 @@
+{
+  "cases": [
+    { "raw": "" },
+    { "raw": "not a url" },
+    { "raw": "https://example.com/Suche/wohnungen" },
+    { "raw": "https://www.immobilienscout24.de/expose/123" },
+    { "raw": "https://www.immobilienscout24.de/Suche/radius/berlin" },
+    { "raw": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2&pagenumber=1" },
+    { "raw": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2&pagenumber=3" }
+  ]
+}

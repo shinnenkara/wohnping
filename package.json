@@ -1,0 +1,12 @@
+{
+  "name": "wohnping",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "pack": "node scripts/pack.js"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.12"
+  }
+}

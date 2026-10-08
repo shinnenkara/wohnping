@@ -1,0 +1,19 @@
+{
+  "existing": [
+    { "id": "a", "status": "new", "firstSeen": 10, "title": "A" },
+    { "id": "b", "status": "seen", "firstSeen": 11, "title": "B" },
+    { "id": "c", "status": "dismissed", "firstSeen": 12, "title": "C" },
+    { "id": "d", "status": "replied", "firstSeen": 13, "title": "D" }
+  ],
+  "incoming": [
+    { "id": "a", "replied": true, "title": "A" },
+    { "id": "b", "replied": true, "title": "B" },
+    { "id": "c", "replied": true, "title": "C" },
+    { "id": "d", "replied": true, "title": "D" }
+  ],
+  "trim": {
+    "newId": "keep-new",
+    "droppable": 400,
+    "incomingId": "extra"
+  }
+}

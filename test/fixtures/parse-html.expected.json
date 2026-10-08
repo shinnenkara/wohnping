@@ -1,0 +1,22 @@
+{
+  "listings": [
+    {
+      "id": "444",
+      "url": "https://www.immobilienscout24.de/expose/444",
+      "title": "Helle Wohnung",
+      "price": "1.200 €",
+      "area": "64 m²",
+      "rooms": "2",
+      "replied": true
+    },
+    {
+      "id": "666",
+      "url": "https://www.immobilienscout24.de/expose/666",
+      "title": "Zweite Wohnung",
+      "price": "850 €",
+      "area": "40 m²",
+      "rooms": "1",
+      "replied": false
+    }
+  ]
+}

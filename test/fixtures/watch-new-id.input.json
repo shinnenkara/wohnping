@@ -1,0 +1,13 @@
+{
+  "searchUrl": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2",
+  "tabId": 7,
+  "first": [
+    { "id": "10", "title": "Altbau", "price": "1.000 €", "area": "50 m²", "rooms": "2" },
+    { "id": "11", "title": "Studio", "price": "800 €", "area": "30 m²", "rooms": "1" }
+  ],
+  "second": [
+    { "id": "10", "title": "Altbau", "price": "1.000 €", "area": "50 m²", "rooms": "2" },
+    { "id": "11", "title": "Studio", "price": "800 €", "area": "30 m²", "rooms": "1" },
+    { "id": "12", "title": "Neubauwohnung", "price": "1.200 €", "area": "64 m²", "rooms": "3" }
+  ]
+}

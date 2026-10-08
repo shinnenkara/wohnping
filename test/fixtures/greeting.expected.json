@@ -1,0 +1,17 @@
+{
+  "cases": [
+    { "greeting": "Guten Tag,", "message": "Guten Tag," },
+    {
+      "greeting": "Sehr geehrte Frau Schmidt,",
+      "message": "Sehr geehrte Frau Schmidt,\n\nWir sind interessiert."
+    },
+    { "greeting": "Sehr geehrter Herr Müller,", "message": "Sehr geehrter Herr Müller," },
+    { "greeting": "Sehr geehrter Herr Müller,", "message": "Sehr geehrter Herr Müller," },
+    { "greeting": "Sehr geehrte Frau Klein,", "message": "Sehr geehrte Frau Klein," },
+    { "greeting": "Sehr geehrter Herr Weber,", "message": "Sehr geehrter Herr Weber," },
+    { "greeting": "Guten Tag,", "message": "Guten Tag," },
+    { "greeting": "Sehr geehrte Damen und Herren,", "message": "Sehr geehrte Damen und Herren," },
+    { "greeting": "Sehr geehrte Damen und Herren,", "message": "Sehr geehrte Damen und Herren," },
+    { "greeting": "Guten Tag,", "message": "Guten Tag," }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "cases": [
+    { "name": "", "template": "" },
+    { "name": "Frau Anna Schmidt", "template": "Wir sind interessiert." },
+    { "name": "Herr Max Müller", "template": "" },
+    { "name": "Herr Dr. Max Müller", "template": "" },
+    { "name": "Frau Prof. Dr. Lisa Klein", "template": "" },
+    { "name": "Herr Dipl.-Ing. Klaus Weber", "template": "" },
+    { "name": "Frau", "template": "" },
+    { "name": "Hausverwaltung GmbH", "template": "" },
+    { "name": "Beispiel AG", "template": "" },
+    { "name": "Nur ein Name", "template": "" }
+  ]
+}

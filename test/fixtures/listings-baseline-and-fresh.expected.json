@@ -1,0 +1,13 @@
+{
+  "afterBaseline": {
+    "fresh": [],
+    "rows": [{ "id": "1", "status": "new", "title": "Eins" }]
+  },
+  "afterNext": {
+    "fresh": ["2"],
+    "rows": [
+      { "id": "1", "status": "new", "title": "Eins" },
+      { "id": "2", "status": "new", "title": "Zwei" }
+    ]
+  }
+}

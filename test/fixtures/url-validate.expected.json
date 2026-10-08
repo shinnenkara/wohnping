@@ -1,0 +1,24 @@
+{
+  "cases": [
+    { "error": "Bitte eine Such-URL einfügen." },
+    { "error": "Die URL ist ungültig." },
+    { "error": "Nur Suchen von immobilienscout24.de." },
+    { "error": "Das ist ein Inserat, keine Suche." },
+    {
+      "url": "https://www.immobilienscout24.de/Suche/radius/berlin",
+      "warnings": [
+        "Keine Sortierung nach Aktualität erkannt (sorting=2). Neue Angebote erscheinen dann oft nicht auf Seite 1."
+      ]
+    },
+    {
+      "url": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2",
+      "warnings": []
+    },
+    {
+      "url": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2&pagenumber=3",
+      "warnings": [
+        "Die URL ist nicht Seite 1. Neue Angebote stehen auf der ersten Seite."
+      ]
+    }
+  ]
+}

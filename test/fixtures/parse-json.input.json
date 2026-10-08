@@ -1,0 +1,28 @@
+{
+  "resultListModel": {
+    "searchResponseModel": {
+      "resultlist.resultlist": {
+        "resultlistEntries": [
+          {
+            "@id": "1001",
+            "resultlist.realEstate": {
+              "title": "Altbau mit Balkon",
+              "price": { "value": 1500 },
+              "livingSpace": 72.5,
+              "numberOfRooms": 3
+            }
+          },
+          {
+            "@id": "1002",
+            "realEstate": {
+              "title": "  Studio  ",
+              "price": 900,
+              "livingSpaceSqm": 28,
+              "numberOfRooms": 1
+            }
+          }
+        ]
+      }
+    }
+  }
+}

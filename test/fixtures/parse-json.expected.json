@@ -1,0 +1,20 @@
+{
+  "listings": [
+    {
+      "id": "1001",
+      "url": "https://www.immobilienscout24.de/expose/1001",
+      "title": "Altbau mit Balkon",
+      "price": "1.500 €",
+      "area": "72,5 m²",
+      "rooms": 3
+    },
+    {
+      "id": "1002",
+      "url": "https://www.immobilienscout24.de/expose/1002",
+      "title": "Studio",
+      "price": "900 €",
+      "area": "28 m²",
+      "rooms": 1
+    }
+  ]
+}

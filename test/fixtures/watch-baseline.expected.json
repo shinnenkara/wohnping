@@ -1,0 +1,9 @@
+{
+  "added": 0,
+  "notificationIds": [],
+  "baselineUrl": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2",
+  "rows": [
+    { "id": "10", "status": "new", "title": "Altbau" },
+    { "id": "11", "status": "new", "title": "Studio" }
+  ]
+}

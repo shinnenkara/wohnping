@@ -1,0 +1,30 @@
+{
+  "first": [
+    {
+      "id": "1",
+      "url": "https://www.immobilienscout24.de/expose/1",
+      "title": "Eins",
+      "price": "1.000 €",
+      "area": "40 m²",
+      "rooms": "2"
+    }
+  ],
+  "second": [
+    {
+      "id": "1",
+      "url": "https://www.immobilienscout24.de/expose/1",
+      "title": "Eins",
+      "price": "1.000 €",
+      "area": "40 m²",
+      "rooms": "2"
+    },
+    {
+      "id": "2",
+      "url": "https://www.immobilienscout24.de/expose/2",
+      "title": "Zwei",
+      "price": "800 €",
+      "area": "30 m²",
+      "rooms": "1"
+    }
+  ]
+}
