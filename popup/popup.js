@@ -52,7 +52,11 @@ function render(state) {
   warningEl.textContent = Immo.actions.watchNotes(state, { includeWarnings: true });
 
   const hidden = new Set(["seen", "dismissed", "replied"]);
-  const rows = state.listings.filter((item) => !hidden.has(item.status)).slice(0, 24);
+  const rows = state.listings.filter((item) => {
+    if (item.status === "dismissed") return false;
+    if (item.thread && item.thread.direction === "in") return true;
+    return !hidden.has(item.status);
+  }).slice(0, 24);
   list.replaceChildren();
   if (!rows.length) {
     const empty = document.createElement("li");
@@ -88,18 +92,43 @@ function listingRow(item) {
   const body = document.createElement("div");
   body.className = "listing-body";
 
+  const details = item.details || {};
+  const idRow = document.createElement("div");
+  idRow.className = "listing-id-row";
   const idEl = document.createElement("div");
   idEl.className = "listing-id";
   idEl.textContent = item.id;
+  const chips = document.createElement("div");
+  chips.className = "chips";
+  for (const chip of listingChips(item)) {
+    const el = document.createElement("span");
+    el.className = chip.kind ? `chip ${chip.kind}` : "chip";
+    el.textContent = chip.text;
+    if (chip.title) el.title = chip.title;
+    chips.append(el);
+  }
+  if (!chips.childElementCount) chips.hidden = true;
+  idRow.append(idEl, chips);
 
   const facts = [];
-  if (item.price) facts.push(item.price);
-  if (item.area) facts.push(item.area);
-  if (item.rooms !== "" && item.rooms != null) facts.push(`${item.rooms} Zi.`);
+  const rent = details.warmRent || item.price;
+  if (rent) facts.push(rent);
+  const area = details.area || item.area;
+  const rooms = details.rooms != null && details.rooms !== "" ? details.rooms : item.rooms;
+  if (area) facts.push(area);
+  if (rooms !== "" && rooms != null) facts.push(String(rooms).includes("Zi") ? String(rooms) : `${rooms} Zi.`);
   const meta = document.createElement("div");
   meta.className = "meta";
   meta.textContent = facts.join(" · ");
+  const factTip = factsTitle(details);
+  if (factTip) meta.title = factTip;
   if (!facts.length) meta.hidden = true;
+
+  const address = document.createElement("div");
+  address.className = "meta address";
+  address.textContent = details.address || "";
+  if (details.address) address.title = details.address;
+  if (!details.address) address.hidden = true;
 
   const applied = item.status === "filled";
   const actions = document.createElement("div");
@@ -117,7 +146,7 @@ function listingRow(item) {
   if (stampShown.title) stamp.title = stampShown.title;
   if (!stampShown.text) stamp.hidden = true;
 
-  body.append(idEl, meta, actions, stamp);
+  body.append(idRow, meta, address, actions, stamp);
   li.append(title, toggle, body);
   return li;
 }
@@ -136,6 +165,42 @@ function stampLine(item) {
     titles.push(`Ausgefüllt ${shown.full}`);
   }
   return { text: bits.join(" · "), title: titles.join(" · ") };
+}
+
+function listingChips(item) {
+  const chips = [];
+  const details = item.details || {};
+  const thread = item.thread;
+  if (thread && (thread.direction === "in" || thread.direction === "out")) {
+    const reply = thread.direction === "in";
+    let text = reply ? "Antwort" : "Wartet";
+    if (Number.isInteger(thread.in) && Number.isInteger(thread.out)) text += ` ${thread.in}·${thread.out}`;
+    chips.push({ text, kind: reply ? "reply" : "wait", title: threadTip(thread) });
+  }
+  if (details.photoCount === 0) chips.push({ text: "Keine Fotos", kind: "warn" });
+  if (/^sofort$/i.test(String(details.availableFrom || "").trim())) chips.push({ text: "Sofort" });
+  return chips;
+}
+
+function threadTip(thread) {
+  const bits = [];
+  const match = String(thread.on || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) bits.push(`${match[3]}.${match[2]}.${match[1].slice(2)}`);
+  if (Number.isInteger(thread.in) && Number.isInteger(thread.out)) {
+    bits.push(`Anbieter ${thread.in}, du ${thread.out}`);
+  }
+  return bits.join(" · ");
+}
+
+function factsTitle(details) {
+  const bits = [];
+  if (details.coldRent) bits.push(`Kalt ${details.coldRent}`);
+  if (details.warmRent) bits.push(`Warm ${details.warmRent}`);
+  if (details.extraCosts) bits.push(`Nebenkosten ${details.extraCosts}`);
+  if (details.heatingCosts) bits.push(`Heizung ${details.heatingCosts}`);
+  if (details.landlord) bits.push(details.landlord);
+  if (details.availableFrom) bits.push(`frei ab ${details.availableFrom}`);
+  return bits.join(" · ");
 }
 
 document.querySelector("#options").addEventListener("click", () => chrome.runtime.openOptionsPage());

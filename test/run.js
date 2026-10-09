@@ -22,16 +22,20 @@ const CONTRACTS = [
   "greeting",
   "listings-baseline-and-fresh",
   "listings-replied-and-trim",
+  "listings-details",
   "storage-clears-baseline",
+  "reload-delay",
   "parse-json",
   "parse-html",
+  "parse-expose",
+  "parse-chat",
   "watch-baseline",
   "watch-new-id",
   "watch-should-fill",
   "watch-fill-result",
   "package-boundary",
 ];
-const REQUIRED_CONTRACTS = 13;
+const REQUIRED_CONTRACTS = 17;
 
 const PACKAGE_PERMISSIONS = ["alarms", "notifications", "storage", "tabs"];
 const PACKAGE_HOSTS = ["https://*.immobilienscout24.de/*", "https://immobilienscout24.de/*"];
@@ -47,7 +51,10 @@ loadScript("lib/url.js");
 loadScript("lib/greeting.js");
 loadScript("lib/listings.js");
 loadScript("lib/storage.js");
+loadScript("lib/reload.js");
 loadScript("parse/search-results.js");
+loadScript("parse/expose-page.js");
+loadScript("parse/chat-thread.js");
 
 const Immo = globalThis.Immo;
 
@@ -142,6 +149,119 @@ function runListingsBaseline(input) {
   return {
     afterBaseline: { fresh: first.fresh.map((row) => row.id), rows: rowsOf(first.listings) },
     afterNext: { fresh: second.fresh.map((row) => row.id), rows: rowsOf(second.listings) },
+  };
+}
+
+function threadId(n) {
+  return `aaaaaaaa-bbbb-4ccc-8ddd-${String(n).padStart(12, "0")}`;
+}
+
+function runListingsDetails(input) {
+  const existing = { [input.existing.id]: storedRow(input.existing) };
+  const stamped = Immo.listings.upsertAll(existing, input.incoming, false, input.searchUrl);
+  const stampedRow = stamped.listings[input.existing.id];
+  const merged = Immo.listings.mergeDetails(stamped.listings, input.existing.id, input.details, "");
+  const kept = merged[input.existing.id];
+  const withThread = {
+    ...kept,
+    thread: {
+      conversationId: input.thread.conversationId,
+      direction: input.thread.direction,
+      on: input.thread.on,
+    },
+  };
+  const after = Immo.listings.upsertAll(
+    { [kept.id]: withThread },
+    input.incoming,
+    false,
+    input.nextSearchUrl,
+  );
+  const survived = after.listings[kept.id];
+  const created = Immo.listings.mergeDetails({}, input.freshId, input.details, input.freshTitle);
+  const held = Immo.listings.applyChat({}, {}, input.held);
+  const taken = Immo.listings.takeThreads(created, held.threads, input.freshId);
+  const addressListings = {
+    [input.freshId]: storedRow({
+      id: input.freshId,
+      status: "opened",
+      details: { address: input.details.address },
+    }),
+  };
+  const byAddress = Immo.listings.applyChat(addressListings, {}, input.chat);
+  const ambiguousListings = {
+    a: storedRow({ id: "a", status: "new", details: { address: input.details.address } }),
+    b: storedRow({ id: "b", status: "new", details: { address: input.chat.address } }),
+  };
+  const ambiguous = Immo.listings.applyChat(ambiguousListings, {}, input.chat);
+  let capped = {};
+  for (let n = 1; n <= input.cap; n += 1) {
+    const step = Immo.listings.applyChat(capped.listings || {}, capped.threads || {}, {
+      conversationId: threadId(n),
+      direction: "out",
+      on: "2026-10-01",
+    });
+    capped = step;
+  }
+  const leaked = JSON.stringify({
+    kept,
+    survived,
+    taken: taken.listings[input.freshId],
+    byAddress: byAddress.listings[input.freshId],
+    ambiguous,
+    capped,
+  }).includes("DECOY");
+  return {
+    stampedSearchUrl: stampedRow.searchUrl,
+    merged: {
+      status: kept.status,
+      searchUrl: kept.searchUrl,
+      title: kept.title,
+      coldRent: kept.details.coldRent,
+      photoCount: kept.details.photoCount,
+    },
+    created: {
+      status: created[input.freshId].status,
+      searchUrl: created[input.freshId].searchUrl,
+      title: created[input.freshId].title,
+    },
+    survived: {
+      coldRent: survived.details.coldRent,
+      direction: survived.thread.direction,
+      searchUrl: survived.searchUrl,
+    },
+    byExposeId: {
+      direction: taken.listings[input.freshId].thread.direction,
+      threads: Object.keys(taken.threads).sort(),
+    },
+    byAddress: {
+      direction: byAddress.listings[input.freshId].thread.direction,
+      threads: Object.keys(byAddress.threads).sort(),
+    },
+    ambiguous: {
+      attached: !!(ambiguous.listings.a.thread || ambiguous.listings.b.thread),
+      held: Object.keys(ambiguous.threads).length,
+    },
+    cap: {
+      size: Object.keys(capped.threads).length,
+      keptLast: !!capped.threads[threadId(input.cap)],
+      droppedFirst: !capped.threads[threadId(1)],
+    },
+    keysEqual: Immo.listings.addressKey(input.details.address) === Immo.listings.addressKey(input.chat.address),
+    leaked,
+  };
+}
+
+async function runReloadDelay(input) {
+  const delays = input.rolls.map((roll) => Immo.reload.nextDelay(() => roll));
+  const high = Immo.reload.nextDelay(() => input.high);
+  const worker = await bootWorker(watchLocal(input.searchUrl), {});
+  await worker.fireAlarm();
+  const scheduled = worker.alarmCreates[worker.alarmCreates.length - 1] || {};
+  const delay = scheduled.delayInMinutes;
+  return {
+    delays,
+    highInRange: high >= 1 && high < 5,
+    rescheduled: delay >= 1 && delay < 5 && scheduled.periodInMinutes == null,
   };
 }
 
@@ -251,6 +371,7 @@ async function bootWorker(localData, sessionData) {
   const local = memoryArea(localData);
   const session = memoryArea(sessionData);
   const notificationIds = [];
+  const alarmCreates = [];
   const chrome = {
     storage: { local, session },
     action: {
@@ -259,7 +380,9 @@ async function bootWorker(localData, sessionData) {
     },
     alarms: {
       async clear() {},
-      async create() {},
+      async create(_name, info) {
+        alarmCreates.push(info || {});
+      },
       onAlarm: listenerBag(),
     },
     notifications: {
@@ -311,8 +434,14 @@ async function bootWorker(localData, sessionData) {
   await new Promise((resolve) => setImmediate(resolve));
   return {
     notificationIds,
+    alarmCreates,
     local,
     session,
+    fireAlarm() {
+      const listeners = chrome.alarms.onAlarm.list;
+      if (listeners.length !== 1) throw new Error("Expected one alarm listener.");
+      return listeners[0]({ name: "watch-reload" });
+    },
     send(message, sender = {}) {
       const listeners = chrome.runtime.onMessage.list;
       if (listeners.length !== 1) throw new Error("Expected one message listener.");
@@ -455,6 +584,8 @@ const EXECUTE = {
   greeting: runGreeting,
   "listings-baseline-and-fresh": runListingsBaseline,
   "listings-replied-and-trim": runListingsReplied,
+  "listings-details": runListingsDetails,
+  "reload-delay": runReloadDelay,
   "storage-clears-baseline": runStorage,
   "parse-json"(input, file) {
     const listings = Immo.search.listingsFromJsonText(fs.readFileSync(file, "utf8"));
@@ -464,6 +595,18 @@ const EXECUTE = {
   "parse-html"(_input, file) {
     const { document } = parseHTML(fs.readFileSync(file, "utf8"));
     return { listings: Immo.search.parseSearchResults(document) };
+  },
+  "parse-expose"(input) {
+    const out = {};
+    for (const [name, html] of Object.entries(input.cases)) {
+      const { document } = parseHTML(html);
+      out[name] = Immo.expose.parse(document);
+    }
+    return out;
+  },
+  "parse-chat"(_input, file) {
+    const { document } = parseHTML(fs.readFileSync(file, "utf8"));
+    return Immo.chat.parse(document);
   },
   "watch-baseline": runWatchBaseline,
   "watch-new-id": runWatchNewId,

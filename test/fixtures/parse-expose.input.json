@@ -1,0 +1,7 @@
+{
+  "cases": {
+    "withPhotos": "<div id=\"is24-content\"><h1 data-qa=\"expose-title\">Wohnung Beispiel</h1><div data-qa=\"is24-expose-address\"><span class=\"address-text\">Beispielweg 1, Beispielkiez, 10115 Berlin</span></div><dd class=\"is24qa-kaltmiete\">487,54 €</dd><dd class=\"is24qa-gesamtmiete\">771,54 €</dd><dd class=\"is24qa-nebenkosten\"><span class=\"is24-operator\">+</span> 152 €</dd><dd class=\"is24qa-heizkosten\"><span class=\"is24-operator\">+</span> 132 €</dd><dd class=\"is24qa-zimmer\">2,5</dd><dd class=\"is24qa-wohnflaeche-ca\">61,73  m²</dd><dd class=\"is24qa-bezugsfrei-ab\">23.10.2026</dd><p data-qa=\"company-name\">Beispiel Wohnen GmbH</p><p data-qa=\"contactName\">Abgeschnitten</p><img alt=\"Logo\" src=\"https://example.test/logo.jpg\"><div class=\"galleryEntryContainer\"><img data-testid=\"gallery-entry-image\" alt=\"Wohnzimmer\" src=\"https://example.test/a.jpg\"><img data-testid=\"gallery-entry-image\" alt=\"Küche\" src=\"https://example.test/b.jpg\"></div><div id=\"is24-description-section\">DECOY-DESCRIPTION</div></div>",
+    "empty": "<div class=\"galleryEntryContainer\"><img alt=\"Logo\" src=\"https://example.test/logo.jpg\"><div id=\"is24-description-section\">DECOY-DESCRIPTION</div></div>",
+    "missing": "<div id=\"is24-content\"><div id=\"is24-description-section\">DECOY-DESCRIPTION</div></div>"
+  }
+}

@@ -35,7 +35,12 @@
     },
     {
       "matches": ["https://*.immobilienscout24.de/expose/*", "https://immobilienscout24.de/expose/*"],
-      "js": ["lib/greeting.js", "fill/contact-form.js", "ui/page-bar.js", "content/expose.js"],
+      "js": ["lib/greeting.js", "fill/contact-form.js", "ui/page-bar.js", "parse/expose-page.js", "content/expose.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.immobilienscout24.de/messenger/messages/*", "https://immobilienscout24.de/messenger/messages/*"],
+      "js": ["parse/chat-thread.js", "content/chat.js"],
       "run_at": "document_idle"
     }
   ]

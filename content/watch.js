@@ -33,7 +33,7 @@
       return;
     }
 
-    let text = "Dieser Tab wird etwa einmal pro Minute neu geladen, um neue Angebote zu finden. Ein Inserat öffnet einen neuen Tab.";
+    let text = "Dieser Tab wird etwa alle ein bis fünf Minuten neu geladen, um neue Angebote zu finden. Ein Inserat öffnet einen neuen Tab.";
     if (state.paused) {
       text = "Pause. Dieser Tab wird nicht neu geladen.";
     } else if (state.offSearch) {

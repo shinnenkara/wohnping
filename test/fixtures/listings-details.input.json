@@ -1,0 +1,57 @@
+{
+  "searchUrl": "https://www.immobilienscout24.de/Suche/a",
+  "nextSearchUrl": "https://www.immobilienscout24.de/Suche/b",
+  "existing": {
+    "id": "10",
+    "status": "replied",
+    "title": "Altbau",
+    "searchUrl": "https://www.immobilienscout24.de/Suche/old",
+    "firstSeen": 5
+  },
+  "incoming": [
+    {
+      "id": "10",
+      "title": "Altbau neu",
+      "price": "900 €",
+      "area": "40 m²",
+      "rooms": "2",
+      "replied": true
+    }
+  ],
+  "details": {
+    "address": "Beispielweg 1, Beispielkiez, 10115 Berlin",
+    "coldRent": "487,54 €",
+    "warmRent": "771,54 €",
+    "extraCosts": "152 €",
+    "heatingCosts": "132 €",
+    "rooms": "2,5",
+    "area": "61,73 m²",
+    "availableFrom": "23.10.2026",
+    "landlord": "Beispiel Wohnen GmbH",
+    "photoCount": 0,
+    "description": "DECOY-DESCRIPTION"
+  },
+  "freshId": "11",
+  "freshTitle": "Neu",
+  "thread": {
+    "conversationId": "22c64c98-4694-4d84-a5f8-00c4569da525",
+    "direction": "in",
+    "on": "2026-10-08"
+  },
+  "held": {
+    "conversationId": "aaaaaaaa-bbbb-4ccc-8ddd-000000000099",
+    "exposeId": "11",
+    "address": "Andere Strasse 2, 20095 Hamburg",
+    "direction": "out",
+    "on": "2026-10-07",
+    "text": "DECOY-CHAT"
+  },
+  "chat": {
+    "conversationId": "bbbbbbbb-bbbb-4ccc-8ddd-000000000010",
+    "address": "Beispielweg 1, 10115 Berlin",
+    "direction": "in",
+    "on": "2026-10-08",
+    "text": "DECOY-CHAT"
+  },
+  "cap": 31
+}

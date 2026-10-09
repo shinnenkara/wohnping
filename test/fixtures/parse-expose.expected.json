@@ -1,0 +1,27 @@
+{
+  "withPhotos": {
+    "title": "Wohnung Beispiel",
+    "details": {
+      "address": "Beispielweg 1, Beispielkiez, 10115 Berlin",
+      "coldRent": "487,54 €",
+      "warmRent": "771,54 €",
+      "extraCosts": "152 €",
+      "heatingCosts": "132 €",
+      "rooms": "2,5",
+      "area": "61,73 m²",
+      "availableFrom": "23.10.2026",
+      "landlord": "Beispiel Wohnen GmbH",
+      "photoCount": 2
+    }
+  },
+  "empty": {
+    "title": "",
+    "details": {
+      "photoCount": 0
+    }
+  },
+  "missing": {
+    "title": "",
+    "details": {}
+  }
+}

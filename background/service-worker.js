@@ -1,10 +1,10 @@
-importScripts("../lib/url.js", "../lib/listings.js", "../lib/storage.js");
+importScripts("../lib/url.js", "../lib/listings.js", "../lib/storage.js", "../lib/reload.js");
 
 const ALARM = "watch-reload";
 const Immo = globalThis.Immo;
 
-function alarmDelay() {
-  return 1;
+function scheduleReload() {
+  return chrome.alarms.create(ALARM, { delayInMinutes: Immo.reload.nextDelay() });
 }
 
 async function getTabOrNull(id) {
@@ -128,7 +128,7 @@ async function ensureWatch() {
     if (tab) await rememberTab(tab.id);
   }
   if (!tab) tab = await createWatchTab(state.searchUrl);
-  await chrome.alarms.create(ALARM, { periodInMinutes: alarmDelay() });
+  await scheduleReload();
   await updateBadge();
 }
 
@@ -154,7 +154,7 @@ async function start() {
     await focusTab(tab);
     await rememberTab(tab.id);
   }
-  await chrome.alarms.create(ALARM, { periodInMinutes: alarmDelay() });
+  await scheduleReload();
   await updateBadge();
   return { ok: true, warnings: validated.warnings, state: await publicState() };
 }
@@ -174,7 +174,7 @@ async function resume() {
   await chrome.storage.local.set({ paused: false });
   let tab = await getWatchTab();
   if (!tab) tab = await createWatchTab(state.searchUrl);
-  await chrome.alarms.create(ALARM, { periodInMinutes: alarmDelay() });
+  await scheduleReload();
   await updateBadge();
   await pushWatchState();
   return { ok: true, state: await publicState() };
@@ -231,6 +231,7 @@ async function reloadWatchTab() {
   if (tab.url && Immo.url.sameSearch(tab.url, state.searchUrl)) await chrome.tabs.reload(tab.id);
   else await chrome.tabs.update(tab.id, { url: state.searchUrl });
   await chrome.storage.local.set({ lastReloadAt: Date.now() });
+  if (state.watching && !state.paused) await scheduleReload();
   return { ok: true, state: await publicState() };
 }
 
@@ -288,21 +289,26 @@ async function setCollapsed(id, collapsed) {
 async function onAlarm() {
   const state = await Immo.storage.getAll();
   if (!state.watching || state.paused) return;
-  const tab = await getWatchTab();
-  if (!tab) {
-    await chrome.storage.session.remove("watchTabId");
-    await chrome.storage.session.set({ watchMissing: true });
-    return;
+  try {
+    const tab = await getWatchTab();
+    if (!tab) {
+      await chrome.storage.session.remove("watchTabId");
+      await chrome.storage.session.set({ watchMissing: true });
+      return;
+    }
+    if (!tab.url || !Immo.url.sameSearch(tab.url, state.searchUrl)) {
+      await chrome.storage.session.set({ watchOffSearch: true });
+      await pushWatchState();
+      return;
+    }
+    await chrome.storage.session.set({ watchOffSearch: false });
+    if (tab.discarded) await chrome.tabs.update(tab.id, { url: state.searchUrl });
+    else await chrome.tabs.reload(tab.id);
+    await chrome.storage.local.set({ lastReloadAt: Date.now() });
+  } finally {
+    const latest = await Immo.storage.getAll();
+    if (latest.watching && !latest.paused) await scheduleReload();
   }
-  if (!tab.url || !Immo.url.sameSearch(tab.url, state.searchUrl)) {
-    await chrome.storage.session.set({ watchOffSearch: true });
-    await pushWatchState();
-    return;
-  }
-  await chrome.storage.session.set({ watchOffSearch: false });
-  if (tab.discarded) await chrome.tabs.update(tab.id, { url: state.searchUrl });
-  else await chrome.tabs.reload(tab.id);
-  await chrome.storage.local.set({ lastReloadAt: Date.now() });
 }
 
 async function onWatchGate(message, sender) {
@@ -325,7 +331,12 @@ async function onWatchLoaded(message, sender) {
   if (!gate.isWatchTab || !gate.watching || gate.offSearch) return gate;
   const state = await Immo.storage.getAll();
   const baseline = !state.baselineUrl || !Immo.url.sameSearch(state.baselineUrl, state.searchUrl);
-  const { listings, fresh } = Immo.listings.upsertAll(state.listings, message.listings || [], baseline);
+  const { listings, fresh } = Immo.listings.upsertAll(
+    state.listings,
+    message.listings || [],
+    baseline,
+    state.searchUrl,
+  );
   await chrome.storage.local.set({
     listings,
     baselineUrl: state.searchUrl,
@@ -344,6 +355,24 @@ async function onShouldFill(message) {
   if (!message.force && !pending[id]) return { fill: false };
   const state = await Immo.storage.getAll();
   return { fill: true, profile: state.profile };
+}
+
+async function onExposeDetails(message) {
+  const id = String(message.id || "");
+  if (!/^\d+$/.test(id)) return { error: "Unbekanntes Inserat." };
+  const state = await Immo.storage.getAll();
+  const merged = Immo.listings.mergeDetails(state.listings, id, message.details, message.title);
+  const claimed = Immo.listings.takeThreads(merged, state.threads, id);
+  await chrome.storage.local.set({ listings: claimed.listings, threads: claimed.threads });
+  return { ok: true };
+}
+
+async function onChatStatus(message) {
+  const state = await Immo.storage.getAll();
+  const result = Immo.listings.applyChat(state.listings, state.threads, message);
+  if (!result) return { error: "Unvollständiger Chat." };
+  await chrome.storage.local.set({ listings: result.listings, threads: result.threads });
+  return { ok: true };
 }
 
 async function onFillResult(message) {
@@ -394,6 +423,10 @@ async function handle(message, sender) {
       return onWatchGate(message, sender);
     case "watch-loaded":
       return onWatchLoaded(message, sender);
+    case "expose-details":
+      return onExposeDetails(message);
+    case "chat-status":
+      return onChatStatus(message);
     case "should-fill":
       return onShouldFill(message);
     case "fill-result":
@@ -411,7 +444,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === ALARM) onAlarm();
+  if (alarm.name === ALARM) return onAlarm();
 });
 
 chrome.notifications.onClicked.addListener((notificationId) => {

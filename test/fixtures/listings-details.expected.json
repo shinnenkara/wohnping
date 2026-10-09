@@ -1,0 +1,39 @@
+{
+  "stampedSearchUrl": "https://www.immobilienscout24.de/Suche/a",
+  "merged": {
+    "status": "replied",
+    "searchUrl": "https://www.immobilienscout24.de/Suche/a",
+      "title": "Altbau neu",
+      "coldRent": "487,54 €",
+      "photoCount": 0
+  },
+  "created": {
+    "status": "opened",
+    "searchUrl": "",
+    "title": "Neu"
+  },
+  "survived": {
+    "coldRent": "487,54 €",
+    "direction": "in",
+    "searchUrl": "https://www.immobilienscout24.de/Suche/b"
+  },
+  "byExposeId": {
+    "direction": "out",
+    "threads": []
+  },
+  "byAddress": {
+    "direction": "in",
+    "threads": []
+  },
+  "ambiguous": {
+    "attached": false,
+    "held": 1
+  },
+  "cap": {
+    "size": 30,
+    "keptLast": true,
+    "droppedFirst": true
+  },
+  "keysEqual": true,
+  "leaked": false
+}

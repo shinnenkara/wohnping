@@ -110,6 +110,49 @@
     syncFillBar();
   });
 
+  function captureExpose() {
+    const id = exposeId();
+    if (!id || !Immo.expose) return;
+    let sent = false;
+    const publish = (force) => {
+      if (sent) return true;
+      let parsed;
+      try {
+        parsed = Immo.expose.parse(document);
+      } catch {
+        return false;
+      }
+      const galleryKnown = Object.prototype.hasOwnProperty.call(parsed.details, "photoCount");
+      const ready = !!(parsed.details.coldRent && parsed.details.landlord && galleryKnown);
+      const hasPayload = !!(parsed.title || Object.keys(parsed.details).length);
+      if ((!ready && !force) || !hasPayload) return false;
+      sent = true;
+      try {
+        const pending = chrome.runtime.sendMessage({
+          type: "expose-details",
+          id,
+          title: parsed.title || "",
+          details: parsed.details,
+        });
+        if (pending && typeof pending.catch === "function") pending.catch(() => {});
+      } catch {
+        /* the listing page can close before the worker answers */
+      }
+      return true;
+    };
+    if (publish(false)) return;
+    const root = document.querySelector("#is24-content") || document.body;
+    const observer = new MutationObserver(() => {
+      if (publish(false)) observer.disconnect();
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    setTimeout(() => {
+      observer.disconnect();
+      publish(true);
+    }, 8000);
+  }
+
   syncFillBar();
   maybeFill(false);
+  captureExpose();
 })();
