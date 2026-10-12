@@ -13,6 +13,7 @@
     { "greeting": "Sehr geehrte Damen und Herren,", "message": "Sehr geehrte Damen und Herren," },
     { "greeting": "Sehr geehrte Damen und Herren,", "message": "Sehr geehrte Damen und Herren," },
     { "greeting": "Guten Tag,", "message": "Guten Tag," },
-    { "greeting": "Sehr geehrter Herr M. Handke,", "message": "Sehr geehrter Herr M. Handke," }
+    { "greeting": "Sehr geehrter Herr M. Handke,", "message": "Sehr geehrter Herr M. Handke," },
+    { "greeting": "Sehr geehrte Damen und Herren,", "message": "Sehr geehrte Damen und Herren," }
   ]
 }
