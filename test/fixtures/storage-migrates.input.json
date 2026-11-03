@@ -1,0 +1,25 @@
+{
+  "stored": {
+    "watching": true,
+    "paused": false,
+    "lastReloadAt": 1,
+    "searchUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
+    "baselineUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
+    "listings": {
+      "10": {
+        "id": "10",
+        "status": "replied",
+        "title": "Altbau",
+        "firstSeen": 5,
+        "appliedAt": 9,
+        "thread": {
+          "conversationId": "aaaaaaaa-bbbb-4ccc-8ddd-000000000010",
+          "direction": "in",
+          "on": "2026-10-08",
+          "in": 1,
+          "out": 0
+        }
+      }
+    }
+  }
+}

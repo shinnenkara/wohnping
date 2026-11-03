@@ -1,0 +1,98 @@
+{
+  "now": "2026-11-03T22:57:00",
+  "cap": 20,
+  "rolls": [0, 0.5],
+  "requests": {
+    "1": { "status": "sent", "source": "manual", "sentOn": "today" },
+    "2": { "status": "sent", "source": "auto", "sentOn": "today" },
+    "3": { "status": "sent", "source": "scout", "sentOn": "today" },
+    "4": { "status": "sent", "source": "manual", "sentOn": "yesterday" }
+  },
+  "listings": {
+    "10": {
+      "id": "10",
+      "title": "Gatower",
+      "url": "https://www.immobilienscout24.de/expose/10",
+      "addressKey": "gatower str. 35|13595",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false
+    },
+    "11": {
+      "id": "11",
+      "title": "Bärbel",
+      "url": "https://www.immobilienscout24.de/expose/11",
+      "addressKey": "",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false
+    },
+    "12": {
+      "id": "12",
+      "title": "System",
+      "url": "https://www.immobilienscout24.de/expose/12",
+      "addressKey": "rhinstraße 3|10315",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false
+    }
+  },
+  "open": {
+    "10": {
+      "listingId": "10",
+      "status": "draft",
+      "reason": "",
+      "source": "manual",
+      "createdAt": 1,
+      "sentAt": 0,
+      "answeredAt": 0
+    },
+    "12": {
+      "listingId": "12",
+      "status": "sent",
+      "reason": "",
+      "source": "scout",
+      "createdAt": 1,
+      "sentAt": 1,
+      "answeredAt": 0
+    }
+  },
+  "rows": [
+    {
+      "address": "Gatower Str. 35, 13595 Berlin ...",
+      "exposeId": "",
+      "on": "",
+      "today": true,
+      "automatic": false,
+      "deactivated": false,
+      "reply": false
+    },
+    {
+      "address": "Bärbel-Boley-Ring 26, 13355 Berlin ...",
+      "exposeId": "11",
+      "on": "2026-11-01",
+      "today": false,
+      "automatic": false,
+      "deactivated": false,
+      "reply": true
+    },
+    {
+      "address": "Rhinstraße 3, 10315 Berlin ...",
+      "exposeId": "",
+      "on": "2026-11-02",
+      "today": false,
+      "automatic": true,
+      "deactivated": true,
+      "reply": false
+    },
+    {
+      "address": "Unbekannt 1, 99999 Nirgendwo",
+      "exposeId": "",
+      "on": "",
+      "today": true,
+      "automatic": false,
+      "deactivated": false,
+      "reply": true
+    }
+  ]
+}

@@ -107,6 +107,11 @@
 
   function watchNotes(state, options) {
     const notes = [];
+    if (state.storageError) {
+      const err = state.storageError;
+      const keys = Array.isArray(err.keys) ? err.keys.join(", ") : "";
+      notes.push(`Speichern fehlgeschlagen (${err.operation}${keys ? `: ${keys}` : ""}): ${err.message}`);
+    }
     if (state.watchMissing) notes.push("Der Watch-Tab wurde geschlossen. Bitte erneut starten.");
     if (state.watchOffSearch) notes.push("Der Watch-Tab ist nicht mehr auf der Suchseite.");
     if (options && options.includeWarnings && state.warnings && state.warnings.length) {

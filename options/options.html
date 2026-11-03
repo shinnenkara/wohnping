@@ -46,6 +46,18 @@
       </div>
       <p id="url-note" class="warn"></p>
 
+      <h2>Auto-Senden</h2>
+      <label>
+        <input id="autoSend" name="autoSend" type="checkbox">
+        Anfragen automatisch senden
+      </label>
+      <p id="auto-send-note" class="warn"></p>
+      <div>
+        <label for="dailyCap">Tageslimit für automatisches Senden (1–50)</label>
+        <input id="dailyCap" name="dailyCap" type="number" min="1" max="50" value="20">
+      </div>
+      <p id="sent-today" class="muted"></p>
+
       <div class="grid-2">
         <div>
           <label for="salutation">Anrede</label>
@@ -181,6 +193,7 @@
     <p class="muted">Wohnping ist unabhängig und nicht mit Scout24 oder ImmobilienScout24 verbunden.</p>
   </main>
   <script src="../lib/url.js"></script>
+  <script src="../lib/listings.js"></script>
   <script src="../lib/greeting.js"></script>
   <script src="../ui/actions.js"></script>
   <script src="options.js"></script>

@@ -1,38 +1,36 @@
 {
-  "stampedSearchUrl": "https://www.immobilienscout24.de/Suche/a",
   "merged": {
-    "status": "replied",
-    "searchUrl": "https://www.immobilienscout24.de/Suche/a",
-      "title": "Altbau neu",
-      "coldRent": "487,54 €",
-      "photoCount": 0
+    "hasStatus": false,
+    "title": "Altbau neu",
+    "coldRent": "487,54 €",
+    "photoCount": 0,
+    "addressKey": "beispielweg 1|10115"
   },
+  "answered": true,
+  "answeredStatus": "sent",
   "created": {
-    "status": "opened",
-    "searchUrl": "",
+    "hasStatus": false,
     "title": "Neu"
   },
   "survived": {
-    "coldRent": "487,54 €",
-    "direction": "in",
-    "searchUrl": "https://www.immobilienscout24.de/Suche/b"
+    "coldRent": "487,54 €"
   },
   "byExposeId": {
     "direction": "out",
-    "threads": []
+    "listingId": "11"
   },
   "byAddress": {
     "direction": "in",
-    "threads": []
+    "listingId": "11"
   },
   "ambiguous": {
     "attached": false,
     "held": 1
   },
   "cap": {
-    "size": 30,
+    "size": 31,
     "keptLast": true,
-    "droppedFirst": true
+    "droppedFirst": false
   },
   "keysEqual": true,
   "leaked": false

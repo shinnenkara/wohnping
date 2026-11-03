@@ -40,6 +40,25 @@ function profileFromForm() {
   };
 }
 
+function renderAuto(state) {
+  const missing = Immo.listings.missingFields(profileFromForm());
+  const box = field("autoSend");
+  const savedOn = !!(state && state.autoSend);
+  box.checked = savedOn && missing.length === 0;
+  box.disabled = missing.length > 0;
+  const note = document.querySelector("#auto-send-note");
+  note.textContent = missing.length ? `Auto-Senden bleibt aus. Es fehlt: ${missing.join(", ")}.` : "";
+  const sent = document.querySelector("#sent-today");
+  if (state && state.counts) {
+    sent.dataset.count = String(state.counts.sentToday || 0);
+    sent.dataset.auto = String(state.counts.autoSent || 0);
+  }
+  const count = Number(sent.dataset.count || 0);
+  const auto = Number(sent.dataset.auto || 0);
+  const cap = Number(field("dailyCap").value) || (state && state.dailyCap) || 20;
+  sent.textContent = `Heute gesendet: ${count} (manuell und automatisch). Automatisch: ${auto} von ${cap}.`;
+}
+
 function fillForm(state) {
   field("searchUrl").value = state.searchUrl || "";
   const profile = state.profile || {};
@@ -53,6 +72,8 @@ function fillForm(state) {
   toggleFollowUps();
   refreshPreview();
   showUrlNotes(field("searchUrl").value);
+  if (state.dailyCap) field("dailyCap").value = state.dailyCap;
+  renderAuto(state);
 }
 
 function toggleFollowUps() {
@@ -102,6 +123,7 @@ async function call(type) {
 }
 
 function renderWatch(state) {
+  renderAuto(state);
   controls.replaceChildren(...Immo.actions.sessionControls(state, watchHandlers));
   tabActions.replaceChildren(...Immo.actions.watchTabControls(state, watchHandlers));
   Immo.actions.applyStatus(state, statusEl, detailEl);
@@ -112,6 +134,17 @@ field("message").addEventListener("input", refreshPreview);
 field("moveInDateType").addEventListener("change", toggleFollowUps);
 field("hasPets").addEventListener("change", toggleFollowUps);
 field("searchUrl").addEventListener("input", () => showUrlNotes(field("searchUrl").value));
+form.addEventListener("input", () => renderAuto({
+  autoSend: field("autoSend").checked,
+  dailyCap: Number(field("dailyCap").value) || 20,
+}));
+field("autoSend").addEventListener("change", () => {
+  const missing = Immo.listings.missingFields(profileFromForm());
+  if (field("autoSend").checked && missing.length) {
+    field("autoSend").checked = false;
+    document.querySelector("#auto-send-note").textContent = `Auto-Senden bleibt aus. Es fehlt: ${missing.join(", ")}.`;
+  }
+});
 
 document.querySelector("#use-tab").addEventListener("click", async () => {
   const windows = await chrome.windows.getAll({ populate: true, windowTypes: ["normal"] });
@@ -151,6 +184,8 @@ form.addEventListener("submit", async (event) => {
     type: "save-settings",
     profile: profileFromForm(),
     searchUrl,
+    autoSend: field("autoSend").checked,
+    dailyCap: Number(field("dailyCap").value),
   });
   if (res && res.error) {
     urlNote.textContent = res.error;

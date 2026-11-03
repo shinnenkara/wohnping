@@ -1,0 +1,31 @@
+{
+  "rows": [
+    {
+      "address": "Gatower Str. 35, 13595 Berlin ...",
+      "exposeId": "",
+      "on": "",
+      "today": true,
+      "automatic": false,
+      "deactivated": false,
+      "reply": false
+    },
+    {
+      "address": "Rhinstraße 3, 10315 Berlin ...",
+      "exposeId": "",
+      "on": "2026-11-02",
+      "today": false,
+      "automatic": true,
+      "deactivated": true,
+      "reply": false
+    },
+    {
+      "address": "Bärbel-Boley-Ring 26, 13355 Berlin ...",
+      "exposeId": "170196925",
+      "on": "2026-11-01",
+      "today": false,
+      "automatic": false,
+      "deactivated": false,
+      "reply": true
+    }
+  ]
+}

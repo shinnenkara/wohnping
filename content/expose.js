@@ -45,18 +45,77 @@
       showNote("Das Formular konnte nicht ausgefüllt werden.", true);
       return;
     }
-    if (result.status === "login") {
-      showNote("Bitte bei ImmoScout anmelden. Das Formular wurde nicht ausgefüllt.", true);
-    } else if (result.status === "no-form") {
-      showNote("Kein Freitext-Formular auf diesem Inserat.", true);
-    } else {
-      showNote(result.detail || "Ausgefüllt. Bitte prüfen und selbst senden.", false);
+    if (decision.submit) {
+      await finishAutoSend(id, result);
+      return;
     }
+    noteFor(result);
     try {
       await chrome.runtime.sendMessage({ type: "fill-result", id, status: result.status });
     } catch {
       /* the note on the page still explains the result */
     }
+    if (result.status === "filled") watchManualSend(id);
+  }
+
+  function noteFor(result) {
+    if (result.status === "login") showNote("Bitte bei ImmoScout anmelden. Das Formular wurde nicht ausgefüllt.", true);
+    else if (result.status === "captcha") showNote("Captcha. Bitte selbst lösen und senden.", true);
+    else if (result.status === "plus") showNote("Dieses Inserat braucht Plus. Es wird nicht gesendet.", true);
+    else if (result.status === "no-form") showNote("Kein Freitext-Formular auf diesem Inserat.", true);
+    else if (result.status === "sent") showNote("Die Anfrage wurde gesendet.", false);
+    else showNote(result.detail || "Ausgefüllt. Bitte prüfen und selbst senden.", false);
+  }
+
+  async function finishAutoSend(id, result) {
+    if (result.status === "filled" && !result.blocked) {
+      let gate;
+      try {
+        const parsed = Immo.expose ? Immo.expose.parse(document) : { title: "", details: {} };
+        gate = await chrome.runtime.sendMessage({
+          type: "expose-details",
+          id,
+          title: parsed.title || "",
+          details: parsed.details || {},
+        });
+      } catch {
+        gate = null;
+      }
+      if (gate && gate.sameFlat) {
+        showNote("Dieselbe Wohnung wurde schon angefragt. Nicht gesendet.", true);
+        return;
+      }
+      try {
+        result = await Immo.contactForm.submitFilled();
+      } catch {
+        result = { status: "form" };
+      }
+    } else if (result.status === "filled" && result.blocked) {
+      result = { status: "form" };
+    }
+    noteFor(result);
+    try {
+      await chrome.runtime.sendMessage({ type: "send-result", id, outcome: result.status });
+    } catch {
+      /* the note on the page still explains the result */
+    }
+  }
+
+  function watchManualSend(id) {
+    const started = Date.now();
+    const timer = setInterval(() => {
+      let sent = false;
+      try {
+        sent = Immo.contactForm.isSent(document);
+      } catch {
+        sent = false;
+      }
+      if (!sent && Date.now() - started < 120000) return;
+      clearInterval(timer);
+      if (!sent) return;
+      const pending = chrome.runtime.sendMessage({ type: "send-result", id, outcome: "sent" });
+      if (pending && typeof pending.catch === "function") pending.catch(() => {});
+    }, 1000);
   }
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -97,16 +156,17 @@
     if (gate && gate.isWatchTab) return;
     let local = {};
     try {
-      local = await chrome.storage.local.get(["watching", "paused"]);
+      local = await chrome.storage.local.get(["settings"]);
     } catch {
       return;
     }
-    drawFillBar({ watching: !!local.watching, paused: !!local.paused });
+    const settings = local.settings || {};
+    drawFillBar({ watching: !!settings.watching, paused: !!settings.paused });
   }
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
-    if (!changes.watching && !changes.paused) return;
+    if (!changes.settings) return;
     syncFillBar();
   });
 

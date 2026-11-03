@@ -1,16 +1,9 @@
 {
-  "statuses": {
-    "a": "replied",
-    "b": "replied",
-    "c": "dismissed",
-    "d": "replied"
+  "requests": {
+    "a": { "status": "sent", "source": "scout", "reason": "" },
+    "b": { "status": "sent", "source": "scout", "reason": "" },
+    "d": { "status": "sent", "source": "scout", "reason": "" }
   },
-  "trim": {
-    "size": 400,
-    "dropped": ["drop-1", "drop-2"],
-    "kept": [
-      { "id": "extra", "status": "new" },
-      { "id": "keep-new", "status": "new" }
-    ]
-  }
+  "dismissed": ["c"],
+  "keptSize": 402
 }

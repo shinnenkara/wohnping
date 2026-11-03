@@ -1,13 +1,15 @@
 {
   "afterBaseline": {
     "fresh": [],
-    "rows": [{ "id": "1", "status": "new", "title": "Eins" }]
+    "rows": [
+      { "id": "1", "title": "Eins", "inBaseline": true, "request": null }
+    ]
   },
   "afterNext": {
     "fresh": ["2"],
     "rows": [
-      { "id": "1", "status": "new", "title": "Eins" },
-      { "id": "2", "status": "new", "title": "Zwei" }
+      { "id": "1", "title": "Eins", "inBaseline": true, "request": null },
+      { "id": "2", "title": "Zwei", "inBaseline": false, "request": null }
     ]
   }
 }

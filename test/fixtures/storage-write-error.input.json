@@ -1,0 +1,35 @@
+{
+  "message": "QUOTA_BYTES quota exceeded",
+  "stored": {
+    "profile": {},
+    "searchUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
+    "baselineUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
+    "settings": {
+      "watching": false,
+      "paused": false,
+      "autoSend": false,
+      "dailyCap": 20,
+      "sentOn": "2026-11-03",
+      "sentCount": 0
+    },
+    "listings": {
+      "10": {
+        "id": "10",
+        "title": "Bleibt",
+        "url": "https://www.immobilienscout24.de/expose/10",
+        "price": "",
+        "area": "",
+        "rooms": "",
+        "firstSeen": 1,
+        "lastSeen": 1,
+        "collapsed": false,
+        "addressKey": ""
+      }
+    },
+    "hits": {
+      "10": { "listingId": "10", "firstSeen": 1, "lastSeen": 1, "inBaseline": true }
+    },
+    "requests": {},
+    "threads": {}
+  }
+}

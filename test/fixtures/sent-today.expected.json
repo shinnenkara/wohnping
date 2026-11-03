@@ -1,0 +1,13 @@
+{
+  "shown": 2,
+  "auto": 1,
+  "capIgnoresManual": true,
+  "messagesDelay": [15, 22.5],
+  "matched": ["10", "11", "12"],
+  "requests": {
+    "10": { "status": "sent", "source": "manual", "answered": false, "sentToday": true },
+    "11": { "status": "sent", "source": "scout", "answered": true, "sentToday": false },
+    "12": { "status": "sent", "source": "scout", "answered": false, "sentToday": false }
+  },
+  "deactivated": ["12"]
+}

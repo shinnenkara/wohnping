@@ -1,0 +1,57 @@
+{
+  "incomplete": { "firstName": "Ada", "moveInDateType": "FROM_NOW" },
+  "complete": {
+    "firstName": "Ada",
+    "lastName": "Lovelace",
+    "email": "ada@example.com",
+    "phone": "030123",
+    "street": "Hauptstr",
+    "houseNumber": "1",
+    "postcode": "10115",
+    "city": "Berlin",
+    "incomeAmount": "3000",
+    "message": "Guten Tag.",
+    "moveInDateType": "FROM_NOW"
+  },
+  "exact": {
+    "firstName": "Ada",
+    "lastName": "Lovelace",
+    "email": "ada@example.com",
+    "phone": "030123",
+    "street": "Hauptstr",
+    "houseNumber": "1",
+    "postcode": "10115",
+    "city": "Berlin",
+    "incomeAmount": "3000",
+    "message": "Guten Tag.",
+    "moveInDateType": "CONCRETE",
+    "moveInDate": ""
+  },
+  "yesterday": {
+    "watching": true,
+    "paused": false,
+    "autoSend": true,
+    "dailyCap": 20,
+    "sentOn": "2026-11-02",
+    "sentCount": 20
+  },
+  "today": {
+    "watching": true,
+    "paused": false,
+    "autoSend": true,
+    "dailyCap": 20,
+    "sentOn": "2026-11-03",
+    "sentCount": 4
+  },
+  "wideCap": {
+    "watching": false,
+    "paused": false,
+    "autoSend": false,
+    "dailyCap": 99,
+    "sentOn": "2026-11-03",
+    "sentCount": 0
+  },
+  "capRequests": {
+    "a": { "status": "skipped", "reason": "cap", "createdAt": 1762160400000 }
+  }
+}

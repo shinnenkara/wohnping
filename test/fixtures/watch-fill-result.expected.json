@@ -1,4 +1,5 @@
 {
-  "status": "filled",
+  "request": { "status": "draft", "source": "manual", "reason": "" },
+  "status": null,
   "pendingIds": {}
 }
