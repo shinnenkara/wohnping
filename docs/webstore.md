@@ -16,7 +16,7 @@ Support URL: empty. Official URL: none. Promo video and promo tiles: empty. Two 
 
 Summary comes from the package `description`:
 
-Überwacht eine gespeicherte ImmobilienScout24-Suche und füllt das Kontaktformular. Automatisches Senden ist optional und bleibt lokal.
+Überwacht eine ImmobilienScout24-Suche und füllt das Kontaktformular. Auto-Senden ist optional und lokal.
 
 Description:
 
