@@ -1,0 +1,13 @@
+{
+  "searchUrl": "https://www.immobilienscout24.de/Suche/radius/berlin?sorting=2",
+  "outcomes": ["sent", "captcha", "login", "plus", "no-form", "form", "cap"],
+  "request": {
+    "listingId": "9",
+    "status": "sending",
+    "reason": "",
+    "source": "auto",
+    "createdAt": 1,
+    "sentAt": 0,
+    "answeredAt": 0
+  }
+}

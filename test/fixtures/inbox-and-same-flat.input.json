@@ -1,0 +1,72 @@
+{
+  "focus": "1",
+  "listings": {
+    "1": {
+      "id": "1",
+      "title": "Neu",
+      "url": "https://www.immobilienscout24.de/expose/1",
+      "firstSeen": 2,
+      "lastSeen": 2,
+      "collapsed": false,
+      "addressKey": "hauptstr 1|10115"
+    },
+    "2": {
+      "id": "2",
+      "title": "Schon",
+      "url": "https://www.immobilienscout24.de/expose/2",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false,
+      "addressKey": "hauptstr 1|10115"
+    },
+    "3": {
+      "id": "3",
+      "title": "Andere",
+      "url": "https://www.immobilienscout24.de/expose/3",
+      "firstSeen": 3,
+      "lastSeen": 3,
+      "collapsed": false,
+      "addressKey": ""
+    },
+    "4": {
+      "id": "4",
+      "title": "Basis",
+      "url": "https://www.immobilienscout24.de/expose/4",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false,
+      "addressKey": ""
+    },
+    "5": {
+      "id": "5",
+      "title": "Gesehen",
+      "url": "https://www.immobilienscout24.de/expose/5",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "seenAt": 4,
+      "collapsed": false,
+      "addressKey": ""
+    },
+    "6": {
+      "id": "6",
+      "title": "Prüfen",
+      "url": "https://www.immobilienscout24.de/expose/6",
+      "firstSeen": 1,
+      "lastSeen": 1,
+      "collapsed": false,
+      "addressKey": ""
+    }
+  },
+  "hits": {
+    "1": { "listingId": "1", "firstSeen": 2, "lastSeen": 2, "inBaseline": false },
+    "2": { "listingId": "2", "firstSeen": 1, "lastSeen": 1, "inBaseline": false },
+    "3": { "listingId": "3", "firstSeen": 3, "lastSeen": 3, "inBaseline": false },
+    "4": { "listingId": "4", "firstSeen": 1, "lastSeen": 1, "inBaseline": true },
+    "5": { "listingId": "5", "firstSeen": 1, "lastSeen": 1, "inBaseline": false },
+    "6": { "listingId": "6", "firstSeen": 1, "lastSeen": 1, "inBaseline": false }
+  },
+  "requests": {
+    "2": { "listingId": "2", "status": "sent", "reason": "", "source": "scout", "createdAt": 1, "sentAt": 1, "answeredAt": 0 },
+    "6": { "listingId": "6", "status": "needs-you", "reason": "captcha", "source": "auto", "createdAt": 1, "sentAt": 0, "answeredAt": 0 }
+  }
+}

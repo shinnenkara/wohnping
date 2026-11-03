@@ -1,0 +1,22 @@
+{
+  "sent": { "status": "sent", "reason": "", "sent": true },
+  "captcha": { "status": "needs-you", "reason": "captcha", "sent": false },
+  "login": { "status": "needs-you", "reason": "login", "sent": false },
+  "plus": { "status": "skipped", "reason": "plus", "sent": false },
+  "no-form": { "status": "skipped", "reason": "no-form", "sent": false },
+  "form": { "status": "needs-you", "reason": "form", "sent": false },
+  "cap": { "status": "skipped", "reason": "cap", "sent": false },
+  "capRun": {
+    "skipped": { "status": "skipped", "source": "auto", "reason": "cap" },
+    "untouched": null,
+    "sentCount": 20,
+    "autoSend": true,
+    "tabs": 0,
+    "notified": true
+  },
+  "loginRun": {
+    "request": { "status": "needs-you", "source": "auto", "reason": "login" },
+    "autoSend": false,
+    "watching": true
+  }
+}

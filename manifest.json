@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Wohnping",
-  "version": "1.0.1",
-  "description": "Überwacht eine gespeicherte ImmobilienScout24-Suche und füllt das Kontaktformular. Senden bleibt bei dir.",
+  "version": "1.1.0",
+  "description": "Überwacht eine gespeicherte ImmobilienScout24-Suche und füllt das Kontaktformular. Automatisches Senden ist optional und bleibt lokal.",
   "minimum_chrome_version": "111",
   "permissions": ["storage", "alarms", "notifications", "tabs"],
   "host_permissions": ["https://*.immobilienscout24.de/*", "https://immobilienscout24.de/*"],
@@ -41,6 +41,14 @@
     {
       "matches": ["https://*.immobilienscout24.de/messenger/messages/*", "https://immobilienscout24.de/messenger/messages/*"],
       "js": ["parse/chat-thread.js", "content/chat.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.immobilienscout24.de/messenger/conversations*",
+        "https://immobilienscout24.de/messenger/conversations*"
+      ],
+      "js": ["parse/conversations.js", "ui/page-bar.js", "content/inbox.js"],
       "run_at": "document_idle"
     }
   ]

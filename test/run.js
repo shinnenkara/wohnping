@@ -24,6 +24,11 @@ const CONTRACTS = [
   "listings-replied-and-trim",
   "listings-details",
   "storage-clears-baseline",
+  "storage-migrates",
+  "storage-write-error",
+  "inbox-and-same-flat",
+  "profile-and-cap",
+  "send-outcome",
   "reload-delay",
   "parse-json",
   "parse-html",
@@ -33,9 +38,11 @@ const CONTRACTS = [
   "watch-new-id",
   "watch-should-fill",
   "watch-fill-result",
+  "sent-today",
+  "parse-inbox",
   "package-boundary",
 ];
-const REQUIRED_CONTRACTS = 17;
+const REQUIRED_CONTRACTS = 24;
 
 const PACKAGE_PERMISSIONS = ["alarms", "notifications", "storage", "tabs"];
 const PACKAGE_HOSTS = ["https://*.immobilienscout24.de/*", "https://immobilienscout24.de/*"];
@@ -55,6 +62,7 @@ loadScript("lib/reload.js");
 loadScript("parse/search-results.js");
 loadScript("parse/expose-page.js");
 loadScript("parse/chat-thread.js");
+loadScript("parse/conversations.js");
 
 const Immo = globalThis.Immo;
 
@@ -92,16 +100,22 @@ function enforceCensus() {
   }
 }
 
-function rowsOf(listings) {
-  return Object.values(listings)
-    .map((row) => ({ id: String(row.id), status: row.status, title: row.title || "" }))
-    .sort((a, b) => a.id.localeCompare(b.id));
+function requestOf(request) {
+  if (!request) return null;
+  return { status: request.status, source: request.source, reason: request.reason || "" };
 }
 
-function statusesOf(listings) {
-  const out = {};
-  for (const row of rowsOf(listings)) out[row.id] = row.status;
-  return out;
+function rowsOf(listings, hits, requests) {
+  const hitMap = hits || {};
+  const requestMap = requests || {};
+  return Object.values(listings)
+    .map((row) => ({
+      id: String(row.id),
+      title: row.title || "",
+      inBaseline: !!(hitMap[row.id] && hitMap[row.id].inBaseline),
+      request: requestOf(requestMap[row.id]),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 function storedRow(partial) {
@@ -144,11 +158,11 @@ function runGreeting(input) {
 }
 
 function runListingsBaseline(input) {
-  const first = Immo.listings.upsertAll({}, input.first, true);
-  const second = Immo.listings.upsertAll(first.listings, input.second, false);
+  const first = Immo.listings.upsertAll({}, {}, {}, input.first, true, 1000);
+  const second = Immo.listings.upsertAll(first.listings, first.hits, first.requests, input.second, false, 2000);
   return {
-    afterBaseline: { fresh: first.fresh.map((row) => row.id), rows: rowsOf(first.listings) },
-    afterNext: { fresh: second.fresh.map((row) => row.id), rows: rowsOf(second.listings) },
+    afterBaseline: { fresh: first.fresh.map((row) => row.id), rows: rowsOf(first.listings, first.hits, first.requests) },
+    afterNext: { fresh: second.fresh.map((row) => row.id), rows: rowsOf(second.listings, second.hits, second.requests) },
   };
 }
 
@@ -158,48 +172,41 @@ function threadId(n) {
 
 function runListingsDetails(input) {
   const existing = { [input.existing.id]: storedRow(input.existing) };
-  const stamped = Immo.listings.upsertAll(existing, input.incoming, false, input.searchUrl);
-  const stampedRow = stamped.listings[input.existing.id];
-  const merged = Immo.listings.mergeDetails(stamped.listings, input.existing.id, input.details, "");
+  const stamped = Immo.listings.upsertAll(existing, {}, {}, input.incoming, false, 1000);
+  const merged = Immo.listings.mergeDetails(stamped.listings, input.existing.id, input.details, "", 1000);
   const kept = merged[input.existing.id];
-  const withThread = {
-    ...kept,
-    thread: {
-      conversationId: input.thread.conversationId,
-      direction: input.thread.direction,
-      on: input.thread.on,
-    },
-  };
-  const after = Immo.listings.upsertAll(
-    { [kept.id]: withThread },
-    input.incoming,
-    false,
-    input.nextSearchUrl,
-  );
+  const answered = Immo.listings.applyChat(merged, {}, stamped.requests, {
+    conversationId: input.thread.conversationId,
+    direction: input.thread.direction,
+    on: input.thread.on,
+    exposeId: input.existing.id,
+    in: 1,
+    out: 0,
+  }, 3000);
+  const after = Immo.listings.upsertAll(merged, {}, stamped.requests, input.incoming, false, 2000);
   const survived = after.listings[kept.id];
-  const created = Immo.listings.mergeDetails({}, input.freshId, input.details, input.freshTitle);
-  const held = Immo.listings.applyChat({}, {}, input.held);
-  const taken = Immo.listings.takeThreads(created, held.threads, input.freshId);
+  const created = Immo.listings.mergeDetails({}, input.freshId, input.details, input.freshTitle, 1000);
+  const held = Immo.listings.applyChat(created, {}, {}, input.held, 1000);
+  const taken = Immo.listings.takeThreads(created, held.threads, {}, input.freshId, 1000);
   const addressListings = {
     [input.freshId]: storedRow({
       id: input.freshId,
-      status: "opened",
       details: { address: input.details.address },
     }),
   };
-  const byAddress = Immo.listings.applyChat(addressListings, {}, input.chat);
+  const byAddress = Immo.listings.applyChat(addressListings, {}, {}, input.chat, 1000);
   const ambiguousListings = {
-    a: storedRow({ id: "a", status: "new", details: { address: input.details.address } }),
-    b: storedRow({ id: "b", status: "new", details: { address: input.chat.address } }),
+    a: storedRow({ id: "a", details: { address: input.details.address } }),
+    b: storedRow({ id: "b", details: { address: input.chat.address } }),
   };
-  const ambiguous = Immo.listings.applyChat(ambiguousListings, {}, input.chat);
+  const ambiguous = Immo.listings.applyChat(ambiguousListings, {}, {}, input.chat, 1000);
   let capped = {};
   for (let n = 1; n <= input.cap; n += 1) {
-    const step = Immo.listings.applyChat(capped.listings || {}, capped.threads || {}, {
+    const step = Immo.listings.applyChat(capped.listings || {}, capped.threads || {}, capped.requests || {}, {
       conversationId: threadId(n),
       direction: "out",
       on: "2026-10-01",
-    });
+    }, 1000);
     capped = step;
   }
   const leaked = JSON.stringify({
@@ -211,34 +218,32 @@ function runListingsDetails(input) {
     capped,
   }).includes("DECOY");
   return {
-    stampedSearchUrl: stampedRow.searchUrl,
     merged: {
-      status: kept.status,
-      searchUrl: kept.searchUrl,
+      hasStatus: Object.prototype.hasOwnProperty.call(kept, "status"),
       title: kept.title,
       coldRent: kept.details.coldRent,
       photoCount: kept.details.photoCount,
+      addressKey: kept.addressKey,
     },
+    answered: answered.requests[input.existing.id].answeredAt === 3000,
+    answeredStatus: answered.requests[input.existing.id].status,
     created: {
-      status: created[input.freshId].status,
-      searchUrl: created[input.freshId].searchUrl,
+      hasStatus: Object.prototype.hasOwnProperty.call(created[input.freshId], "status"),
       title: created[input.freshId].title,
     },
     survived: {
       coldRent: survived.details.coldRent,
-      direction: survived.thread.direction,
-      searchUrl: survived.searchUrl,
     },
     byExposeId: {
-      direction: taken.listings[input.freshId].thread.direction,
-      threads: Object.keys(taken.threads).sort(),
+      direction: taken.threads[input.held.conversationId].direction,
+      listingId: taken.threads[input.held.conversationId].listingId,
     },
     byAddress: {
-      direction: byAddress.listings[input.freshId].thread.direction,
-      threads: Object.keys(byAddress.threads).sort(),
+      direction: byAddress.threads[input.chat.conversationId].direction,
+      listingId: byAddress.threads[input.chat.conversationId].listingId,
     },
     ambiguous: {
-      attached: !!(ambiguous.listings.a.thread || ambiguous.listings.b.thread),
+      attached: Object.values(ambiguous.threads).some((thread) => thread.listingId),
       held: Object.keys(ambiguous.threads).length,
     },
     cap: {
@@ -268,7 +273,15 @@ async function runReloadDelay(input) {
 function runListingsReplied(input) {
   const existing = {};
   for (const item of input.existing) existing[item.id] = storedRow(item);
-  const replied = Immo.listings.upsertAll(existing, input.incoming, false);
+  const replied = Immo.listings.upsertAll(existing, {}, {}, input.incoming, false, 5000);
+  const requests = {};
+  for (const id of Object.keys(replied.requests).sort()) {
+    requests[id] = requestOf(replied.requests[id]);
+  }
+  const dismissed = Object.values(replied.listings)
+    .filter((row) => row.dismissedAt)
+    .map((row) => row.id)
+    .sort();
   const trimExisting = {};
   trimExisting[input.trim.newId] = storedRow({ id: input.trim.newId, status: "new", firstSeen: 0, title: "Neu" });
   for (let i = 1; i <= input.trim.droppable; i += 1) {
@@ -277,23 +290,16 @@ function runListingsReplied(input) {
   }
   const trimmed = Immo.listings.upsertAll(
     trimExisting,
+    {},
+    {},
     [{ id: input.trim.incomingId, title: "Extra", replied: false }],
     false,
+    6000,
   );
-  const before = new Set(Object.keys(trimExisting));
-  before.add(String(input.trim.incomingId));
-  const after = new Set(Object.keys(trimmed.listings));
-  const dropped = [...before].filter((id) => !after.has(id)).sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
-  const keptIds = [input.trim.newId, input.trim.incomingId];
   return {
-    statuses: statusesOf(replied.listings),
-    trim: {
-      size: after.size,
-      dropped,
-      kept: keptIds
-        .map((id) => ({ id, status: trimmed.listings[id] ? trimmed.listings[id].status : null }))
-        .sort((a, b) => a.id.localeCompare(b.id)),
-    },
+    requests,
+    dismissed,
+    keptSize: Object.keys(trimmed.listings).length,
   };
 }
 
@@ -318,29 +324,241 @@ function memoryArea(initial) {
   };
 }
 
+const FIXED_NOW = Date.parse("2026-11-03T12:00:00");
+
+function fixedSettings(extra) {
+  return {
+    watching: false,
+    paused: false,
+    autoSend: false,
+    dailyCap: 20,
+    sentOn: "2026-11-03",
+    sentCount: 0,
+    ...extra,
+  };
+}
+
 async function runStorage(input) {
   const result = {};
-  for (const [name, nextUrl] of [
-    ["changed", input.nextSearchUrl],
-    ["unchanged", input.savedSearchUrl],
-  ]) {
-    globalThis.chrome = {
-      storage: {
-        local: memoryArea({
-          profile: {},
-          searchUrl: input.savedSearchUrl,
-          baselineUrl: input.baselineUrl,
-          watching: false,
-          paused: false,
-          lastReloadAt: 0,
-          listings: {},
-        }),
-      },
-    };
-    const state = await Immo.storage.saveSettings({}, nextUrl);
-    result[name] = state.baselineUrl;
+  Immo.storage.now = () => FIXED_NOW;
+  try {
+    for (const [name, nextUrl] of [
+      ["changed", input.nextSearchUrl],
+      ["unchanged", input.savedSearchUrl],
+    ]) {
+      globalThis.chrome = {
+        storage: {
+          local: memoryArea({
+            profile: {},
+            searchUrl: input.savedSearchUrl,
+            baselineUrl: input.baselineUrl,
+            settings: fixedSettings(),
+            listings: {},
+            hits: input.hits,
+            requests: {},
+            threads: {},
+          }),
+        },
+      };
+      const state = await Immo.storage.saveSettings({}, nextUrl);
+      const hit = state.hits["10"];
+      result[name] = { baselineUrl: state.baselineUrl, inBaseline: !!(hit && hit.inBaseline) };
+    }
+  } finally {
+    Immo.storage.now = null;
   }
   return result;
+}
+
+function runStorageMigrates(input) {
+  const composed = Immo.storage.composeState(input.stored, FIXED_NOW);
+  const listing = composed.state.listings["10"];
+  const request = composed.state.requests["10"];
+  const thread = Object.values(composed.state.threads)[0];
+  return {
+    watching: composed.state.settings.watching,
+    autoSend: composed.state.settings.autoSend,
+    removed: composed.remove.slice().sort(),
+    listingHasStatus: !!(listing && listing.status),
+    seenAt: !!(listing && listing.seenAt),
+    hitBaseline: composed.state.hits["10"].inBaseline,
+    request: request ? { status: request.status, source: request.source } : null,
+    threadListingId: thread ? thread.listingId : "",
+    answered: !!(request && request.answeredAt),
+  };
+}
+
+async function runStorageWriteError(input) {
+  Immo.storage.now = () => FIXED_NOW;
+  const local = memoryArea(input.stored);
+  local.set = async () => {
+    throw new Error(input.message);
+  };
+  const session = memoryArea({});
+  globalThis.chrome = { storage: { local, session } };
+  let failure = null;
+  try {
+    await Immo.storage.saveSettings({ firstName: "Ada" }, input.stored.searchUrl);
+  } catch (err) {
+    failure = err.storageFailure;
+  } finally {
+    Immo.storage.now = null;
+  }
+  return {
+    failure,
+    title: local.snapshot().listings["10"].title,
+    session: session.snapshot().storageError,
+  };
+}
+
+function runInbox(input) {
+  const box = Immo.listings.inbox(input.listings, input.hits, input.requests);
+  return {
+    fresh: box.fresh,
+    needsYou: box.needsYou,
+    blocked: Immo.listings.sameFlatConflict(input.listings[input.focus], input.listings, input.requests),
+    next: (Immo.listings.nextAutoSend(input.listings, input.hits, input.requests) || {}).id || "",
+  };
+}
+
+function runProfile(input) {
+  const rolled = Immo.storage.normalizeSettings(input.yesterday, FIXED_NOW);
+  const held = Immo.storage.normalizeSettings(input.today, FIXED_NOW);
+  const wide = Immo.storage.normalizeSettings(input.wideCap, FIXED_NOW);
+  return {
+    missing: Immo.listings.missingFields(input.incomplete),
+    complete: Immo.listings.missingFields(input.complete),
+    exact: Immo.listings.missingFields(input.exact),
+    rolled: { sentOn: rolled.sentOn, sentCount: rolled.sentCount },
+    held: { sentOn: held.sentOn, sentCount: held.sentCount },
+    cap: wide.dailyCap,
+    cappedToday: Immo.listings.cappedToday({
+      a: { status: "skipped", reason: "cap", createdAt: FIXED_NOW },
+    }, "2026-11-03"),
+  };
+}
+
+async function runSentToday(input) {
+  const now = Date.parse(input.now);
+  const requests = {};
+  for (const [id, req] of Object.entries(input.requests)) {
+    let sentAt = 0;
+    if (req.sentOn === "today") sentAt = now;
+    else if (req.sentOn === "yesterday") {
+      const prior = new Date(now);
+      prior.setDate(prior.getDate() - 1);
+      sentAt = prior.getTime();
+    }
+    requests[id] = {
+      listingId: id,
+      status: req.status,
+      reason: "",
+      source: req.source,
+      createdAt: sentAt,
+      sentAt,
+      answeredAt: 0,
+    };
+  }
+  const tallies = Immo.listings.sentTallies(requests, now);
+  const applied = Immo.listings.applyConversationList(input.listings, input.open, input.rows, now);
+  const view = {};
+  for (const id of Object.keys(applied.requests).sort()) {
+    const req = applied.requests[id];
+    view[id] = {
+      status: req.status,
+      source: req.source,
+      answered: !!req.answeredAt,
+      sentToday: Immo.listings.localDay(req.sentAt) === Immo.listings.localDay(now),
+    };
+  }
+  return {
+    shown: tallies.shown,
+    auto: tallies.auto,
+    capIgnoresManual: tallies.auto < input.cap && tallies.shown > tallies.auto,
+    messagesDelay: input.rolls.map((roll) => Immo.reload.nextMessagesDelay(() => roll)),
+    matched: applied.matched,
+    requests: view,
+    deactivated: Object.values(applied.listings).filter((row) => row.deactivated).map((row) => row.id).sort(),
+  };
+}
+
+async function runSendOutcome(input) {
+  const out = {};
+  for (const outcome of input.outcomes) {
+    const next = Immo.listings.applySendOutcome(input.request, outcome, 80);
+    out[outcome] = { status: next.status, reason: next.reason, sent: next.status === "sent" };
+  }
+  const readyProfile = {
+    firstName: "Ada",
+    lastName: "Lovelace",
+    email: "ada@example.com",
+    phone: "030123",
+    street: "Hauptstr",
+    houseNumber: "1",
+    postcode: "10115",
+    city: "Berlin",
+    incomeAmount: "3000",
+    message: "Guten Tag.",
+    moveInDateType: "FROM_NOW",
+  };
+  const capWorker = await bootWorker({
+    profile: readyProfile,
+    searchUrl: input.searchUrl,
+    baselineUrl: input.searchUrl,
+    settings: fixedSettings({ watching: true, autoSend: true, sentCount: 20, dailyCap: 20 }),
+    listings: {},
+    hits: {},
+    requests: {},
+    threads: {},
+  }, { watchTabId: 7 }, FIXED_NOW);
+  await sendWatchLoaded(capWorker, { searchUrl: input.searchUrl, tabId: 7 }, [
+    { id: "21", title: "Grenze" },
+    { id: "22", title: "Bleibt" },
+  ]);
+  const capStored = capWorker.local.snapshot();
+  const loginWorker = await bootWorker({
+    profile: {},
+    searchUrl: input.searchUrl,
+    baselineUrl: input.searchUrl,
+    settings: fixedSettings({ watching: true, autoSend: true, sentCount: 3 }),
+    listings: {
+      "9": {
+        id: "9",
+        title: "Wand",
+        url: "https://www.immobilienscout24.de/expose/9",
+        price: "",
+        area: "",
+        rooms: "",
+        firstSeen: 1,
+        lastSeen: 1,
+        collapsed: false,
+        addressKey: "",
+      },
+    },
+    hits: { "9": { listingId: "9", firstSeen: 1, lastSeen: 1, inBaseline: false } },
+    requests: {
+      "9": { listingId: "9", status: "sending", reason: "", source: "auto", createdAt: 1, sentAt: 0, answeredAt: 0 },
+    },
+    threads: {},
+  }, { watchTabId: 7, sendingId: "9", sendingTabId: 4 }, FIXED_NOW);
+  await loginWorker.send({ type: "send-result", id: "9", outcome: "login" });
+  const loginStored = loginWorker.local.snapshot();
+  return {
+    ...out,
+    capRun: {
+      skipped: requestOf(capStored.requests["21"]),
+      untouched: capStored.requests["22"] || null,
+      sentCount: capStored.settings.sentCount,
+      autoSend: capStored.settings.autoSend,
+      tabs: capWorker.tabCreates.length,
+      notified: capWorker.notificationIds.includes("cap-reached"),
+    },
+    loginRun: {
+      request: requestOf(loginStored.requests["9"]),
+      autoSend: loginStored.settings.autoSend,
+      watching: loginStored.settings.watching,
+    },
+  };
 }
 
 function listenerBag() {
@@ -367,11 +585,20 @@ function exposeListing(item) {
   };
 }
 
-async function bootWorker(localData, sessionData) {
+async function bootWorker(localData, sessionData, now) {
   const local = memoryArea(localData);
   const session = memoryArea(sessionData);
   const notificationIds = [];
   const alarmCreates = [];
+  const tabCreates = [];
+  const clock = typeof now === "number" ? now : null;
+  function FixedDate(...args) {
+    if (!args.length) return new Date(clock == null ? Date.now() : clock);
+    return new Date(...args);
+  }
+  FixedDate.now = () => (clock == null ? Date.now() : clock);
+  FixedDate.parse = Date.parse;
+  FixedDate.UTC = Date.UTC;
   const chrome = {
     storage: { local, session },
     action: {
@@ -395,8 +622,9 @@ async function bootWorker(localData, sessionData) {
       async get() {
         return null;
       },
-      async create() {
-        return { id: 1 };
+      async create(info) {
+        tabCreates.push(info || {});
+        return { id: tabCreates.length };
       },
       async update() {},
       async query() {
@@ -422,7 +650,7 @@ async function bootWorker(localData, sessionData) {
       onStartup: listenerBag(),
     },
   };
-  const context = { console, URL, Date, Intl, chrome };
+  const context = { console, URL, Date: clock == null ? Date : FixedDate, Intl, chrome };
   vm.createContext(context);
   context.importScripts = (...urls) => {
     for (const url of urls) {
@@ -435,6 +663,7 @@ async function bootWorker(localData, sessionData) {
   return {
     notificationIds,
     alarmCreates,
+    tabCreates,
     local,
     session,
     fireAlarm() {
@@ -487,7 +716,7 @@ async function runWatchBaseline(input) {
     added: response.added,
     notificationIds: worker.notificationIds,
     baselineUrl: stored.baselineUrl,
-    rows: rowsOf(stored.listings),
+    rows: rowsOf(stored.listings, stored.hits, stored.requests),
   };
 }
 
@@ -499,7 +728,7 @@ async function runWatchNewId(input) {
   return {
     added: response.added,
     notificationIds: worker.notificationIds,
-    rows: rowsOf(stored.listings),
+    rows: rowsOf(stored.listings, stored.hits, stored.requests),
   };
 }
 
@@ -519,7 +748,8 @@ async function runWatchFillResult(input) {
   const local = worker.local.snapshot();
   const session = worker.session.snapshot();
   return {
-    status: local.listings[input.id] ? local.listings[input.id].status : null,
+    request: requestOf(local.requests[input.id]),
+    status: local.listings[input.id] && local.listings[input.id].status ? local.listings[input.id].status : null,
     pendingIds: session.pendingIds || {},
   };
 }
@@ -587,6 +817,11 @@ const EXECUTE = {
   "listings-details": runListingsDetails,
   "reload-delay": runReloadDelay,
   "storage-clears-baseline": runStorage,
+  "storage-migrates": runStorageMigrates,
+  "storage-write-error": runStorageWriteError,
+  "inbox-and-same-flat": runInbox,
+  "profile-and-cap": runProfile,
+  "send-outcome": runSendOutcome,
   "parse-json"(input, file) {
     const listings = Immo.search.listingsFromJsonText(fs.readFileSync(file, "utf8"));
     assert.deepEqual(listings, Immo.search.extractListings(input));
@@ -612,6 +847,11 @@ const EXECUTE = {
   "watch-new-id": runWatchNewId,
   "watch-should-fill": runWatchShouldFill,
   "watch-fill-result": runWatchFillResult,
+  "sent-today": runSentToday,
+  "parse-inbox"(_input, file) {
+    const { document } = parseHTML(fs.readFileSync(file, "utf8"));
+    return { rows: Immo.inbox.parse(document) };
+  },
   "package-boundary": runPackageBoundary,
 };
 

@@ -1,0 +1,19 @@
+{
+  "missing": [
+    "Nachname",
+    "E-Mail",
+    "Telefon",
+    "Straße",
+    "Hausnummer",
+    "PLZ",
+    "Ort",
+    "Monatliches netto Haushaltseinkommen",
+    "Nachricht"
+  ],
+  "complete": [],
+  "exact": ["Datum"],
+  "rolled": { "sentOn": "2026-11-03", "sentCount": 0 },
+  "held": { "sentOn": "2026-11-03", "sentCount": 4 },
+  "cap": 50,
+  "cappedToday": true
+}

@@ -298,9 +298,45 @@
     });
   }
 
+  function pageText(doc) {
+    const body = doc.body;
+    return body ? body.innerText || body.textContent || "" : "";
+  }
+
   function isLogin(doc) {
     const path = (doc.defaultView && doc.defaultView.location.pathname) || "";
     return /login|anmelden|einloggen|sign-?in/i.test(path);
+  }
+
+  function isCaptcha(doc) {
+    if (queryAllDeep(doc, "iframe[src*='recaptcha'], iframe[src*='hcaptcha'], .g-recaptcha, .h-captcha, [data-sitekey]").length) return true;
+    return /ich bin kein roboter|captcha/i.test(pageText(doc));
+  }
+
+  function isPlus(doc) {
+    return /interesse bekunden|suchen\s*\+|nur mit plus/i.test(pageText(doc));
+  }
+
+  function isSent(doc) {
+    return /anfrage (wurde )?gesendet|nachricht (wurde )?gesendet|vielen dank für deine anfrage/i.test(pageText(doc));
+  }
+
+  function findSubmit(doc) {
+    const controls = queryAllDeep(doc, "button, input[type='submit'], [role='button']");
+    for (const el of controls) {
+      if (!visible(el)) continue;
+      const text = (el.innerText || el.value || el.textContent || "").replace(/\s+/g, " ").trim();
+      if (SEND.test(text)) return el;
+    }
+    return null;
+  }
+
+  function blockedOutcome(doc) {
+    if (isLogin(doc)) return "login";
+    if (isCaptcha(doc)) return "captcha";
+    if (isPlus(doc)) return "plus";
+    if (isSent(doc)) return "sent";
+    return "";
   }
 
   async function fill(profile) {
@@ -308,7 +344,8 @@
     const started = Date.now();
     let clickedOpen = false;
     while (Date.now() - started < 15000) {
-      if (isLogin(doc)) return { status: "login" };
+      const blocked = blockedOutcome(doc);
+      if (blocked === "login" || blocked === "captcha" || blocked === "plus") return { status: blocked };
       const messageEl = findMessageField(doc);
       if (messageEl) {
         const name = findContactName(doc);
@@ -320,7 +357,7 @@
         const detail = extra
           ? "Ausgefüllt. Weitere Pflichtfelder sind noch leer. Bitte prüfen und selbst senden."
           : "Ausgefüllt. Bitte prüfen und selbst senden.";
-        return { status: "filled", detail };
+        return { status: "filled", detail, blocked: extra };
       }
       if (!clickedOpen && Date.now() - started > 2000) {
         clickedOpen = true;
@@ -329,9 +366,37 @@
       }
       await sleep(400);
     }
-    if (isLogin(doc)) return { status: "login" };
+    const blocked = blockedOutcome(doc);
+    if (blocked === "login" || blocked === "captcha" || blocked === "plus") return { status: blocked };
     return { status: "no-form" };
   }
 
-  Immo.contactForm = { fill, findContactName, findMessageField, findOpener, setNativeValue };
+  async function submitFilled() {
+    const doc = document;
+    const before = blockedOutcome(doc);
+    if (before) return { status: before };
+    const messageEl = findMessageField(doc);
+    if (!messageEl || leftoverRequired(doc, messageEl)) return { status: "form" };
+    const submit = findSubmit(doc);
+    if (!submit) return { status: "form" };
+    submit.click();
+    const started = Date.now();
+    while (Date.now() - started < 8000) {
+      await sleep(400);
+      const outcome = blockedOutcome(doc);
+      if (outcome === "sent" || outcome === "captcha" || outcome === "login") return { status: outcome };
+    }
+    return { status: "form" };
+  }
+
+  Immo.contactForm = {
+    fill,
+    submitFilled,
+    findContactName,
+    findMessageField,
+    findOpener,
+    findSubmit,
+    setNativeValue,
+    isSent,
+  };
 })(globalThis);

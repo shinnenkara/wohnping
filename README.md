@@ -15,3 +15,5 @@ Profil, Such-URL und erkannte Inserate bleiben lokal im Browser. Die Erweiterung
 ## Datenschutz
 
 [docs/privacy.html](docs/privacy.html)
+
+Der Text für den Chrome Web Store steht in [docs/webstore.md](docs/webstore.md).

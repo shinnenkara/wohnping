@@ -50,18 +50,15 @@ function render(state) {
 
   Immo.actions.applyStatus(state, statusEl, detailEl);
   warningEl.textContent = Immo.actions.watchNotes(state, { includeWarnings: true });
+  const counts = state.counts || {};
+  document.querySelector("#counts").textContent = `Neu ${counts.new || 0} · Aktion nötig ${counts.needsYou || 0} · Heute gesendet ${counts.sentToday || 0}`;
 
-  const hidden = new Set(["seen", "dismissed", "replied"]);
-  const rows = state.listings.filter((item) => {
-    if (item.status === "dismissed") return false;
-    if (item.thread && item.thread.direction === "in") return true;
-    return !hidden.has(item.status);
-  }).slice(0, 24);
+  const rows = state.listings.filter((item) => !item.dismissedAt).slice(0, 24);
   list.replaceChildren();
   if (!rows.length) {
     const empty = document.createElement("li");
     empty.className = "muted";
-    empty.textContent = "Keine offenen Angebote. Inserate, die du schon kontaktiert hast, bleiben ausgeblendet.";
+    empty.textContent = "Keine angezeigten Angebote.";
     list.append(empty);
     return;
   }
@@ -76,10 +73,11 @@ function listingRow(item) {
   li.className = collapsed ? "listing collapsed" : "listing";
 
   const name = item.title || `Inserat ${item.id}`;
+  const requestLabel = requestText(item.request);
   const title = document.createElement("div");
   title.className = "title";
-  title.textContent = name;
-  title.title = name;
+  title.textContent = requestLabel ? `${name} · ${requestLabel}` : name;
+  title.title = title.textContent;
 
   const toggle = Immo.actions.button({
     label: collapsed ? "Aufklappen" : "Einklappen",
@@ -130,7 +128,12 @@ function listingRow(item) {
   if (details.address) address.title = details.address;
   if (!details.address) address.hidden = true;
 
-  const applied = item.status === "filled";
+  const sameFlat = document.createElement("div");
+  sameFlat.className = "meta";
+  sameFlat.textContent = item.sameFlat ? "Dieselbe Wohnung wurde schon angefragt." : "";
+  if (!item.sameFlat) sameFlat.hidden = true;
+
+  const applied = item.request && (item.request.status === "draft" || item.request.status === "sent");
   const actions = document.createElement("div");
   actions.className = "row";
   actions.append(Immo.actions.button({
@@ -146,7 +149,7 @@ function listingRow(item) {
   if (stampShown.title) stamp.title = stampShown.title;
   if (!stampShown.text) stamp.hidden = true;
 
-  body.append(idRow, meta, address, actions, stamp);
+  body.append(idRow, meta, address, sameFlat, actions, stamp);
   li.append(title, toggle, body);
   return li;
 }
@@ -159,12 +162,33 @@ function stampLine(item) {
     bits.push(`Erfasst ${shown.label}`);
     titles.push(`Erfasst ${shown.full}`);
   }
-  if (item.appliedAt) {
-    const shown = Immo.actions.formatStamp(item.appliedAt);
-    bits.push(`Ausgefüllt ${shown.label}`);
-    titles.push(`Ausgefüllt ${shown.full}`);
+  if (item.request && item.request.sentAt) {
+    const shown = Immo.actions.formatStamp(item.request.sentAt);
+    bits.push(`Gesendet ${shown.label}`);
+    titles.push(`Gesendet ${shown.full}`);
   }
   return { text: bits.join(" · "), title: titles.join(" · ") };
+}
+
+function requestText(request) {
+  if (!request) return "";
+  const labels = {
+    draft: "Entwurf",
+    sending: "Wird gesendet",
+    sent: "Gesendet",
+    "needs-you": "Aktion nötig",
+    skipped: "Übersprungen",
+  };
+  const reason = {
+    captcha: "Captcha",
+    login: "Anmeldung",
+    plus: "Plus",
+    cap: "Tageslimit",
+    "no-form": "kein Formular",
+    form: "Formular",
+  }[request.reason];
+  const label = labels[request.status] || request.status;
+  return reason ? `${label} (${reason})` : label;
 }
 
 function listingChips(item) {
@@ -177,6 +201,7 @@ function listingChips(item) {
     if (Number.isInteger(thread.in) && Number.isInteger(thread.out)) text += ` ${thread.in}·${thread.out}`;
     chips.push({ text, kind: reply ? "reply" : "wait", title: threadTip(thread) });
   }
+  if (item.deactivated) chips.push({ text: "Deaktiviert", kind: "warn" });
   if (details.photoCount === 0) chips.push({ text: "Keine Fotos", kind: "warn" });
   if (/^sofort$/i.test(String(details.availableFrom || "").trim())) chips.push({ text: "Sofort" });
   return chips;

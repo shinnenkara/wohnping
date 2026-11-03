@@ -1,5 +1,8 @@
 {
   "savedSearchUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
   "baselineUrl": "https://www.immobilienscout24.de/Suche/a?sorting=2",
-  "nextSearchUrl": "https://www.immobilienscout24.de/Suche/b?sorting=2"
+  "nextSearchUrl": "https://www.immobilienscout24.de/Suche/b?sorting=2",
+  "hits": {
+    "10": { "listingId": "10", "firstSeen": 1, "lastSeen": 1, "inBaseline": true }
+  }
 }

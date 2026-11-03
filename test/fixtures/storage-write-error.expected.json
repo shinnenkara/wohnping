@@ -1,0 +1,13 @@
+{
+  "failure": {
+    "operation": "save-settings",
+    "keys": ["profile", "searchUrl"],
+    "message": "QUOTA_BYTES quota exceeded"
+  },
+  "title": "Bleibt",
+  "session": {
+    "operation": "save-settings",
+    "keys": ["profile", "searchUrl"],
+    "message": "QUOTA_BYTES quota exceeded"
+  }
+}

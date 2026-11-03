@@ -1,0 +1,11 @@
+{
+  "watching": true,
+  "autoSend": false,
+  "removed": ["lastReloadAt", "paused", "watching"],
+  "listingHasStatus": false,
+  "seenAt": false,
+  "hitBaseline": true,
+  "request": { "status": "sent", "source": "scout" },
+  "threadListingId": "10",
+  "answered": true
+}
